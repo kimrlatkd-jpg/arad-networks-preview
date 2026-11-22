@@ -2,10 +2,11 @@
 
 [Open the website](https://kimrlatkd-jpg.github.io/arad-networks-preview/)
 
-아라드 네트웍스 홈페이지의 디자인·인터랙션 검토용 사이트입니다.
+아라드 네트웍스 홈페이지의 디자인·인터랙션 검토용 사이트입니다. 현재 디자인: V26.
 
 - 빛과 서버랙으로 이어지는 브랜드 인트로
 - Isolate AI · Accelerate AI · Connect AI의 개별 사업 페이지
+- 수직 경계·병렬 전송·현장 단면으로 구분한 인터랙티브 3D와 사업별 설명 모션
 - 한글·영문, 모바일 화면, 기술 개요 PDF
 - 회사소개, 기술 인사이트, 이메일 문의 작성
 
@@ -17,7 +18,7 @@ Serve the `site` directory with any static HTTP server. No API keys or backend a
 
 HTML, CSS and JavaScript live in `site/`. Editable 3D source and build instructions are in `site/assets/source/`.
 
-Changes to `site/**` on `main` run the Pages workflow. The two ZIPs are the reviewed initial import archives; normal edits use the expanded source files.
+Changes to `site/**` on `main` run the Pages workflow. The two ZIPs hold the reviewed static source and the preserved intro media. Normal edits use the expanded source files; intentional archive imports are available through the manual workflow input.
 
 ## Notes
 
