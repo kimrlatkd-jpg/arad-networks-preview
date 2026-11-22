@@ -1,0 +1,5 @@
+GSAP 3.14.2
+Copyright 2025, GreenSock. All rights reserved.
+Package license: Standard no charge license
+Terms: https://gsap.com/standard-license
+The supplied source retains the original license header.

@@ -1,0 +1,5 @@
+ARAD Networks logo
+
+The logo is user-supplied ARAD Networks brand artwork, extracted from the supplied 2016 Illustrator file. It is not newly drawn or AI-generated. The video uses the provided transparent color PNG unchanged. Brand/trademark rights remain with their respective owner. No separate general-purpose logo license was supplied or is granted by this package. Its inclusion serves the user-requested ARAD website project.
+
+The source CMYK artwork includes Japan Color 2001 Coated. #1B2A55 is the color-managed web conversion of that source, not a separately supplied official RGB brand standard. See assets/logo-origin-and-color.json for the source and texture SHA-256.
