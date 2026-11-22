@@ -1,0 +1,226 @@
+name: ARAD Preview Pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      import_archives:
+        description: "Replace site/ from the reviewed source.zip and media.zip (initial import or intentional update)"
+        required: true
+        default: false
+        type: boolean
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+
+permissions: {}
+
+concurrency:
+  group: arad-preview-pages
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Verify intended repository and branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "kimrlatkd-jpg/arad-networks-preview"
+          test "$GITHUB_REF" = "refs/heads/main"
+
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: true
+
+      - name: Import both reviewed archives
+        if: github.event_name == 'workflow_dispatch' && inputs.import_archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path, PurePosixPath
+          import shutil, stat, tempfile, zipfile
+
+          media = {
+              'assets/intro-16x9-web.mp4', 'assets/intro-21x9-web.mp4',
+              'assets/idle-16x9-web.mp4', 'assets/idle-21x9-web.mp4',
+          }
+          allowed = {'.html', '.css', '.js', '.jpg', '.jpeg', '.png', '.webp',
+                     '.svg', '.otf', '.ttf', '.woff', '.woff2', '.pdf', '.txt', '.mp4'}
+          folders = {'assets', 'en', 'pages', 'insights', 'licenses'}
+          seen = set()
+          total = 0
+          with tempfile.TemporaryDirectory(prefix='arad-import-', dir='.') as tmp:
+              stage = Path(tmp) / 'site'
+              stage.mkdir()
+              for archive_name in ('source.zip', 'media.zip'):
+                  archive = Path(archive_name)
+                  if not archive.is_file() or archive.stat().st_size >= 25 * 1024**2:
+                      raise SystemExit(f'{archive_name}: missing or not below 25 MiB')
+                  archive_files = set()
+                  with zipfile.ZipFile(archive) as z:
+                      for info in z.infolist():
+                          name = info.filename
+                          rel = PurePosixPath(name)
+                          if (not name or '\\' in name or rel.is_absolute()
+                              or name.rstrip('/') != rel.as_posix()
+                              or any(p in ('', '.', '..') or p.startswith('.') for p in rel.parts)):
+                              raise SystemExit(f'Unsafe archive path: {name}')
+                          kind = stat.S_IFMT(info.external_attr >> 16)
+                          if kind not in (0, stat.S_IFREG, stat.S_IFDIR):
+                              raise SystemExit(f'Non-regular archive entry: {name}')
+                          if info.is_dir():
+                              continue
+                          if len(rel.parts) > 1 and rel.parts[0] not in folders:
+                              raise SystemExit(f'Unexpected site folder: {name}')
+                          if rel.suffix.lower() not in allowed or rel.as_posix() in seen:
+                              raise SystemExit(f'Unexpected or duplicate file: {name}')
+                          if archive_name == 'media.zip' and name not in media:
+                              raise SystemExit(f'Unexpected media file: {name}')
+                          if archive_name == 'source.zip' and rel.suffix.lower() == '.mp4':
+                              raise SystemExit(f'MP4 must be in media.zip: {name}')
+                          total += info.file_size
+                          if len(seen) >= 500 or total > 200 * 1024**2:
+                              raise SystemExit('Archive exceeds expected static-site size')
+                          target = stage.joinpath(*rel.parts)
+                          target.parent.mkdir(parents=True, exist_ok=True)
+                          with z.open(info) as src, target.open('wb') as dst:
+                              shutil.copyfileobj(src, dst)
+                          seen.add(rel.as_posix())
+                          archive_files.add(name)
+                  if archive_name == 'media.zip' and archive_files != media:
+                      raise SystemExit('media.zip must contain exactly the four approved MP4 paths')
+              if not (stage / 'index.html').is_file() or not (stage / 'index-en.html').is_file():
+                  raise SystemExit('Archives must contain site contents without an enclosing site/ folder')
+              destination = Path('site')
+              if destination.is_symlink():
+                  raise SystemExit('site/ must not be a symlink')
+              if destination.exists():
+                  shutil.rmtree(destination)
+              shutil.move(str(stage), str(destination))
+          print(f'Imported {len(seen)} static files; {total} uncompressed bytes')
+          PY
+
+      - name: Validate the actual site before committing or deploying
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          from urllib.parse import urlsplit, unquote
+          import re
+
+          root = Path('site').resolve()
+          required = {'index.html', 'index-en.html'}
+          for language in ('pages', 'en'):
+              required.update(f'{language}/{name}.html' for name in
+                              ('isolate', 'accelerate', 'connect', 'insights', 'resources', 'company', 'contact'))
+          media = {'assets/intro-16x9-web.mp4', 'assets/intro-21x9-web.mp4',
+                   'assets/idle-16x9-web.mp4', 'assets/idle-21x9-web.mp4'}
+          required |= media
+          errors = []
+          for name in sorted(required):
+              file = root / name
+              if not file.is_file() or not file.stat().st_size:
+                  errors.append(f'Missing/empty required file: {name}')
+          files = list(root.rglob('*')) if root.is_dir() else []
+          html_files = [p for p in files if p.suffix == '.html']
+          if len(html_files) < 22:
+              errors.append('Expected at least 22 Korean/English HTML pages')
+          allowed = {'.html', '.css', '.js', '.jpg', '.jpeg', '.png', '.webp',
+                     '.svg', '.otf', '.ttf', '.woff', '.woff2', '.pdf', '.txt', '.mp4'}
+          for p in files:
+              if p.is_symlink():
+                  errors.append(f'Symlink rejected: {p.relative_to(root)}')
+              elif p.is_file():
+                  rel = p.relative_to(root)
+                  if any(part.startswith('.') for part in rel.parts) or p.suffix.lower() not in allowed:
+                      errors.append(f'Unexpected public file: {rel}')
+                  if p.suffix in ('.html', '.css', '.js', '.svg', '.txt'):
+                      text = p.read_text(encoding='utf-8')
+                      if re.search(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|github_pat_[A-Za-z0-9_]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|/Users/|file://|https?://(?:localhost|127\.0\.0\.1)', text):
+                          errors.append(f'Credential/local-only reference marker: {rel}')
+          for name in sorted(media):
+              p = root / name
+              if p.is_file():
+                  with p.open('rb') as f:
+                      if p.stat().st_size < 1024 or b'ftyp' not in f.read(32):
+                          errors.append(f'Invalid MP4 header: {name}')
+
+          def check_ref(page, value):
+              if not value:
+                  return
+              url = urlsplit(value)
+              if url.scheme or url.netloc or not url.path:
+                  return
+              if url.path.startswith('/'):
+                  errors.append(f'Root-absolute reference breaks project Pages: {page.relative_to(root)} -> {value}')
+                  return
+              target = (page.parent / unquote(url.path)).resolve()
+              if not target.is_relative_to(root) or not target.exists():
+                  errors.append(f'Missing/escaping local reference: {page.relative_to(root)} -> {value}')
+
+          class References(HTMLParser):
+              def handle_starttag(self, tag, attrs):
+                  for key, value in attrs:
+                      if key in ('href', 'src', 'poster'):
+                          check_ref(self.page, value)
+          parser = References()
+          for page in html_files:
+              parser.page = page
+              parser.feed(page.read_text(encoding='utf-8'))
+          for css in root.rglob('*.css'):
+              for ref in re.findall(r'url\(\s*[\'"]?([^\)\'\"]+)', css.read_text(encoding='utf-8')):
+                  check_ref(css, ref.strip())
+          if errors:
+              raise SystemExit('\n'.join(errors))
+          print(f'Validated {len(html_files)} HTML pages, four MP4 files, and static local references')
+          PY
+
+      - name: Commit imported static files if changed
+        if: github.event_name == 'workflow_dispatch' && inputs.import_archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add --all -- site
+          if git diff --cached --quiet -- site; then
+            echo "site/ already matches the imported archives; no commit required."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Import reviewed ARAD static preview"
+            git push origin HEAD:main
+          fi
+
+      - name: Upload only the public site directory
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: site
+          retention-days: 1
+
+  deploy:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check existing Pages configuration
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+        with:
+          enablement: false
+      - name: Deploy the verified artifact
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
