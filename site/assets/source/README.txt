@@ -1,47 +1,91 @@
-# ARAD V27 내부 3D (27.0.7)
+# ARAD V34 제품 기반 3D 소스 (34.0.0)
 
-`scene-source.js`는 편집 가능한 Three.js 원본이며 `scenes.js`는 Three.js와 후처리를 포함한 브라우저 번들이다. 외부 모델·텍스처·CDN을 요청하지 않는다. 승인된 인트로에는 변경이 없다.
+V32의 홈페이지 구성과 선택 화면 전환을 유지하면서, 사용자가 제공한 ARAD 제품 사진을 참고해 장비 형상을 반영한 버전이다. 네이비·실버 재질, 아라드 블루 광섬유, 기존의 깊이감과 스크롤 연동 방식은 이어간다. 인트로 영상은 완전한 블랙에서 빛이 시작되도록 별도 갱신되었으며, 이 폴더는 선택 화면과 내부 페이지의 실시간 3D 소스를 담는다.
 
-## 재질·빛·깊이
+## 파일과 빌드 관계
 
-- **Isolate:** 앞면이 막힌 상자 대신 실제 깊이가 열린 통신 캐비티. 각 캐비티에 전경·중경·후경 3개 층으로 나눈 108개 광섬유, 총 324개를 배치했다. 절삭 파티션, 깊은 후면, 광학 종단부를 표현했다.
-- **Accelerate:** 3개 층의 깊은 경로, 무게감 있는 끝단 매니폴드와 적층 베이스. 총 288개 광섬유를 여러 높이에 배치했다.
-- **Connect:** 금속 패널·지붕 결합부·설비·지하 단면을 보강했다. 5G·메시·PLC 경로에 총 156개 광섬유를 서로 다른 높이와 깊이로 배치했다.
-- 새틴 알루미늄의 방향성 거칠기 결, 네이비 분체 도장, 금속 단면을 구분한다. 자체 PMREM 스튜디오의 넓은 면광 반사가 카메라 이동에 따라 달라진다.
-- 광섬유는 블루 바탕·청백색 펄스·약한 외부 산란을 분리했다. 비선택 경로도 남겨 여러 공간을 읽을 수 있다.
+- scene-source.js: 내부 페이지의 모델·광섬유·카메라·스크롤 상태. 빌드 결과는 사이트 루트의 scenes.js이며 window.ARADObjects를 제공한다.
+- selector-scene-source.js: 세 사업분야 선택 화면의 투명 배경 모델과 hover 동작. 빌드 결과는 사이트 루트의 selector-objects.js이며 window.ARADSelectorObjects를 제공한다.
+- products.js: 두 장면 소스가 공통으로 사용하는 ARAD Controller, Service Gateway, Point Gateway, 관리 화면, 표면 로고 함수.
+- logo-paths.js: 사용자가 제공한 공식 ARAD 로고 SVG에서 추출한 path 데이터. products.js가 CanvasTexture로 만들어 제품 표면에 배치한다.
+- ../editorial/object-{isolate,accelerate,connect}.jpg: 내부 페이지용 정지 이미지.
+- ../editorial/selector-{isolate,accelerate,connect}.png: 선택 화면용 투명 RGBA 정지 이미지.
 
-기술을 설명하는 개념 모델이며 실제 ARAD 제품 외관 또는 성능을 보증하는 시각 자료가 아니다.
+브라우저에는 번들 JS 두 개만 로드한다. 네 개의 편집 소스는 같은 폴더에 유지해야 하며, 제품 모델이나 로고를 변경하면 두 번들을 모두 다시 빌드한다. 정지 이미지는 같은 소스의 실제 Three.js 렌더에서 내보냈다. 외부 모델·텍스처·CDN을 런타임에 요청하지 않는다.
 
-## API
+## 제품 표현
 
-```js
+공통 제품 형상은 제공된 사진의 특징을 반영한다. Controller는 왼쪽 두 개의 통풍 그릴과 오른쪽 드라이브 베이, Service Gateway는 얇은 랙 장착형 케이스와 전면 포트, Point Gateway는 소형 케이스와 네 개의 LAN 포트를 표현한다. 로고는 장비에 처음부터 부착되어 있다.
+
+선택 화면:
+- Isolate: Service Gateway 6대와 Controller 2대를 장착한 세로 랙.
+- Accelerate: Controller 7대를 적층한 동일 계열의 세로 랙.
+- Connect: 뒤쪽 관리 화면과 앞쪽 Service Gateway 2대·Point Gateway 2대.
+
+내부 페이지:
+- Isolate: 세 캐비닛에 각각 Service Gateway 6대와 Controller 2대를 배치한다. 세 경로를 구분하는 총 324개의 광섬유가 장비 측면을 따라 흐른다.
+- Accelerate: 하나의 세로 랙에 Controller 9대를 세 그룹으로 배치한다. 총 288개의 광섬유로 선택한 경로를 구분한다.
+- Connect: 관리 화면 뒤·앞의 깊이를 가진 구성에 Service Gateway 2대와 Point Gateway 2대를 배치한다. 총 156개의 광섬유가 관리 화면, 네트워크 장비, 단말 쪽 연결을 잇는다.
+
+선택 화면은 작은 영역에서 사업을 식별하기 위한 축약 표현이고, 내부 페이지는 세 단계의 설명을 위한 구성이다. 장비 수량·치수·배치는 시각적 구성값이며 실제 납품 사양이 아니다. 관리 화면은 Concept view로 표시한 개념 UI로, 실제 제품 UI나 측정 성능을 주장하지 않는다.
+
+## 재질과 실행
+
+새틴 금속의 방향성 roughness, 네이비 외함, 은색 가공면을 구분한다. 내부 장면은 중성 슬레이트 환경과 넓은 면광 반사를 사용하며, 구조 금속의 radiance를 bloom 임계값 아래로 제한한다. 블루 광섬유의 독립 HDR 셰이더는 유지한다.
+
+내부 페이지는 HalfFloat 후처리, 제한된 bloom, MSAA와 SMAA를 사용한다. 모바일 DPR은 최대 1.5, 데스크톱은 최대 2이다. 화면 밖·문서 숨김에서는 GPU 렌더링을 멈추며, 선택 및 등장 모션이 끝나면 RAF를 정지한다. 스크롤 입력이 있을 때 현재 상태를 다시 그린다.
+
+선택 화면의 캔버스는 투명하고 배경색은 패널이 담당한다. hover는 700ms의 절제된 회전으로 끝난다. ResizeObserver가 크기에 맞춰 카메라를 맞추고, IntersectionObserver와 문서 가시성으로 불필요한 렌더링을 멈춘다. V32의 패널 진입 순서와 페이지 전환은 상위 컨트롤러가 그대로 담당한다.
+
+## 내부 페이지 API
+
 const scene = ARADObjects.mount(element, {
   type: 'isolate', // accelerate | connect
   reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches
 });
 scene.setProgress(0.5); // native scroll progress, 0..1
-scene.setMode(1);      // manual hero selection
+scene.setMode(1);       // 세 설명 단계 중 선택
 scene.replay();
 scene.setPaused(true);
-scene.getState();      // readiness, mode, progress, camera, fiber count
+scene.getState();       // version, readiness, mode, progress, camera, fiber count
+scene.render(3.0);      // 프레임 검수용
+scene.getAnchors();     // 오버레이 연결점
 scene.dispose();
-```
 
-`setProgress(p)`는 스크롤 위치의 결정론적 상태를 즉시 그린다. 상위 페이지가 스크롤 입력의 완만한 보간을 담당한다. 0은 첫 화면, .15/.45/.75가 설명의 세 단계이다. 0으로 돌아오면 조립·카메라가 첫 상태로 돌아간다.
+setProgress(p)는 스크롤 위치에 해당하는 결정론적 상태를 그린다. 상위 페이지가 입력 보간을 담당하며, 0으로 돌아오면 첫 상태로 복원한다. 모션 감소 설정에서는 카메라·구조 움직임을 줄이고 관련 경로를 정적으로 표시한다.
 
-- Isolate: 기기별 경로 → 별도 라우팅 공간 → 허용된 상대. 공간 사이 간격과 카메라가 변하며 각 깊이를 드러낸다.
-- Accelerate: 할당 → 전송 → 해제. 층별 경로가 조금 벌어지고 카메라가 채널 내부를 비춘다. 종료 단계에는 자원 해제를 빛의 강도로 표현한다.
-- Connect: 5G → 메시 → PLC. 건물의 지붕 결합부와 시선을 조금 이동해 마지막에는 지하 경로를 보여준다.
+## 선택 화면 API
 
-모션 감소 설정에서는 카메라와 구조 움직임을 생략하고 관련 경로만 정적으로 표시한다. 등장·선택 모션이 끝나면 RAF는 정지한다. 스크롤 중에도 호출이 들어올 때만 그리며 화면 밖/문서 숨김에서는 GPU 렌더링을 멈춘다.
+const object = ARADSelectorObjects.mount(element, {
+  type: 'isolate', // accelerate | connect
+  reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches
+});
+object.setPaused(false);
+object.hover(true);
+object.render(0);
+object.exportPng();     // 투명 PNG data URL
+object.getState();
+object.dispose();
 
-`data-object-ready`, `data-object-mode`, `data-object-motion`, `data-object-progress`, `data-object-error`를 상태 관찰에 사용할 수 있다. WebGL 실패 시 canvas를 숨기고 정지 이미지를 표시하도록 상위 페이지가 처리한다. `render(seconds)`와 `getAnchors()`는 프레임 검수·오버레이용이다.
+각 컨테이너에는 명시적인 너비·높이가 필요하다. data-object-ready와 data-object-error로 준비·오류 상태를 확인한다. WebGL을 사용할 수 없을 때 상위 페이지가 정지 이미지를 표시한다.
 
-## 구성
+## 다시 빌드하기
 
-Three.js 0.181.1, esbuild 0.25.11. HalfFloat 후처리, MSAA와 SMAA, 제한된 bloom. 모바일 DPR1.5/그림자1024, 데스크톱 DPR2/그림자2048. 금속 미세 리브의 자기 그림자 오류를 방지하고 큰 면에서는 접촉 그림자를 유지한다.
+의존성: three@0.181.1, esbuild@0.25.11.
 
-독립 폴더에서 원본을 번들하려면 해당 폴더에 `three@0.181.1`과 `esbuild@0.25.11`을 설치한 뒤 `npx esbuild scene-source.js --bundle --format=iife --target=es2020 --minify --outfile=scenes.js`를 실행한다. `<script src="scenes.js"></script>`로 불러오면 `window.ARADObjects`가 노출된다. 캔버스 컨테이너에는 명시적인 너비·높이를 부여한다.
+이 소스 폴더에서 의존성을 준비한 후:
+
+npx esbuild scene-source.js --bundle --format=iife --target=es2020 --minify --legal-comments=eof --outfile=../../scenes.js
+npx esbuild selector-scene-source.js --bundle --format=iife --target=es2020 --minify --legal-comments=eof --outfile=../../selector-objects.js
+
+프로젝트 작업본에서는 다음 빌드 스크립트가 기존 설치 의존성을 재사용하고, 모든 모델의 좌표가 유한한 값인지 함께 검사한다.
+
+node work/v34-objects/interior/build.mjs
+node work/v34-objects/selector/build.mjs
+
+작업본의 공유 파일은 work/v34-objects/products.js와 logo-paths.js이다. 배포용 편집 소스는 이 README와 같은 폴더의 상대 경로로 import한다. 선택 화면의 별도 selector-poster.js는 정지 이미지 출력 전용이며 웹사이트에는 배포하지 않는다.
+
+제품 형상 수정 후 두 번들 및 관련 정지 이미지를 갱신하고, 실제 3D 렌더와 모바일·데스크톱 화면에서 크기, 가림, 전환을 확인한다.
 
 ## Three.js license
 
@@ -54,11 +98,3 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-## 모바일 하이라이트 보정
-
-모바일의 일부 시점에서 좁은 금속면의 반사 하이라이트가 점광원처럼 과증폭되어 전체 장면을 덮는 현상을 실제 캡처에서 확인했다. 불안정한 반사 조건을 줄이기 위해 anisotropy와 미세 노멀맵을 제거하고 방향성 roughness 텍스처는 유지했다. 구조 금속의 반사 radiance는 bloom 임계값 아래로 제한하며, 광섬유의 독립 HDR 셰이더에는 이 제한을 적용하지 않는다. 작은 가공 홈도 자기 그림자를 받지 않도록 처리했다.
-
-반사 보정 이후에는 환경광1.12, 주광.95, 림.42, 부드러운 채움.55로 밝기를 회복해 큰 금속면이 보이도록 했다. 빛줄기와 구조 금속의 발광을 분리한 제한은 유지한다.
-
-금속이 검은 환경만 반사하지 않도록 스튜디오 환경의 바탕을 중성 슬레이트 #263348로 높였다. 실제 페이지·장면 배경은 계속 #000208이다.

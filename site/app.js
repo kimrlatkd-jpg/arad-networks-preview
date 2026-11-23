@@ -30,13 +30,13 @@ const HERO_MEDIA = {
   copyRevealAt: 2.4,
   revealAt: 7.32,
   '16x9': {
-    aspect: 16 / 9, intro: 'assets/intro-16x9-web.mp4?v=23',
-    idle: 'assets/idle-16x9-web.mp4?v=23', poster: 'assets/poster-16x9.jpg?v=23', introPoster: 'assets/intro-poster-16x9.jpg?v=23',
+    aspect: 16 / 9, intro: 'assets/intro-16x9-web.mp4?v=34',
+    idle: 'assets/idle-16x9-web.mp4?v=34', poster: 'assets/poster-16x9.jpg?v=34', introPoster: 'assets/black-opening.svg?v=34',
     object: { cx: 0.7247996067577138, cy: 0.5285044690815344, width: 0.5504007864845725, height: 0.9429910618369313 }
   },
   '21x9': {
-    aspect: 21 / 9, intro: 'assets/intro-21x9-web.mp4?v=23',
-    idle: 'assets/idle-21x9-web.mp4?v=23', poster: 'assets/poster-21x9.jpg?v=23', introPoster: 'assets/intro-poster-21x9.jpg?v=23',
+    aspect: 21 / 9, intro: 'assets/intro-21x9-web.mp4?v=34',
+    idle: 'assets/idle-21x9-web.mp4?v=34', poster: 'assets/poster-21x9.jpg?v=34', introPoster: 'assets/black-opening.svg?v=34',
     object: { cx: 0.7247857066052965, cy: 0.5278841194890873, width: 0.550428586789407, height: 0.9442317610218254 }
   }
 };
@@ -99,6 +99,12 @@ function prepareHeroTypography() {
 function updateHeroCopy() {
   const settled = introCompleted || completedPosterVisible || motionSuppressed();
   const time = settled ? 8 : (pendingIntroTime || video.currentTime || 0);
+  // Match the film's true-black lead-in; use media time so loading, pause,
+  // replay, and aspect changes cannot reveal a pre-existing strand.
+  const exposure = Math.min(1, Math.max(0, (time - .20) / .22));
+  const openingOpacity = 1 - exposure * exposure * (3 - 2 * exposure);
+  document.documentElement.style.setProperty('--opening-black', String(openingOpacity));
+  document.body.classList.toggle('hero-opening', openingOpacity > 0);
   const ready = settled || time >= HERO_MEDIA.copyRevealAt;
   document.body.classList.toggle('hero-copy-ready', ready);
   heroCopy.inert = !ready;

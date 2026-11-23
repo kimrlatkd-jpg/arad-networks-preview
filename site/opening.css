@@ -1,0 +1,7 @@
+/* V34 — the opening is pure black until the film emits its first light. */
+body[data-route=home],body[data-route=home] .home-view,body[data-route=home] .hero-stage,body[data-route=home] .hero-media{background:#000}
+.hero-opening-black{position:fixed;inset:0;z-index:110;background:#000;opacity:var(--opening-black,1);pointer-events:none}
+body:not([data-route=home]) .hero-opening-black,body.is-route-moving .hero-opening-black{display:none}
+/* Autoplay recovery remains reachable above the black poster. */
+body:has(.hero-stage[data-playback=needs-play]) .hero-opening-black,body:has(.hero-stage[data-playback=paused]) .hero-opening-black{display:none}
+.hero-stage[data-playback=needs-play]:not(.is-complete) .hero-media video{opacity:0!important}

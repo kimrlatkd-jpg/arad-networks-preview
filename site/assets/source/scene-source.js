@@ -1,5 +1,6 @@
-/* ARAD V27: authored architectural objects. Three.js MIT; no remote assets. */
+/* ARAD V34: actual-product-inspired authored equipment forms. Three.js MIT; no remote assets. */
 import * as THREE from 'three';
+import { addController, addGateway, addPointGateway, addMonitor, addBrand } from './products.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
@@ -63,150 +64,97 @@ function fiberBank(parent,curves,lane,signals){
 function marker(parent,size,pos,lane,highlights,m){const mat=m.navy.clone();box(parent,size,pos,mat,.015);highlights.push({lane,mat,color:new THREE.Color('#426E9E'),endpoint:true});}
 function finish(model){mergeSolids(model.root);model.root.updateMatrixWorld(true);model.bounds=new THREE.Box3().setFromObject(model.root);return model;}
 
+function rackStructure(parent,m,{width,height,depth,position=[0,0,0]}){
+ const g=new THREE.Group();g.position.set(...position);parent.add(g);const w=width,h=height,d=depth;
+ box(g,[w,h,.15],[0,0,-d/2],m.navy,.045);
+ box(g,[w-.3,h-.4,.05],[0,0,-d/2+.11],m.dark,.015);
+ for(const x of[-w/2+.10,w/2-.10]){
+  box(g,[.20,h,d],[x,0,0],m.brushed,.035);
+  box(g,[.055,h-.12,.08],[x-.018,0,d/2+.018],m.edge,.01);
+  for(let r=0;r<22;r++)box(g,[.052,.045,.018],[x,-h*.43+r*h*.86/21,d/2+.061],m.inset,.004);
+ }
+ for(const y of[-h/2+.09,h/2-.09]){
+  box(g,[w,.18,d],[0,y,0],m.brushed,.035);
+  box(g,[w-.34,.08,.13],[0,y,d/2+.022],m.navy,.012);
+ }
+ // Broad physical sidewalls keep the cabinet substantial rather than a wire-frame cage.
+ for(const x of[-w/2+.02,w/2-.02])box(g,[.07,h-.3,d*.82],[x,0,-d*.09],m.navy,.025);
+ box(g,[w-.22,.36,.09],[0,h/2-.38,d/2-.015],m.navy,.018);
+ addBrand(g,m,{width:w*.18,position:[0,h/2-.38,d/2+.04]});
+ box(g,[w+.13,.22,d+.20],[0,-h/2-.10,0],m.dark,.035);
+ return g;
+}
+
 function isolate(){
  const root=new THREE.Group(),m=kit(),signals=[],highlights=[],anchors=[],stages=[];
- // Three independent vertical cavities: a heavy, continuous base and deep machined partitions.
- box(root,[10.9,.55,4.25],[0,-3.18,0],m.dark,.11);
- box(root,[10.9,.11,4.26],[0,-2.88,0],m.brushed,.025);
- box(root,[10.3,.07,.13],[0,-3.2,2.15],m.inset,.015);
+ box(root,[10.9,.36,4.05],[0,-3.27,0],m.dark,.08);
+ box(root,[10.72,.07,3.95],[0,-3.06,0],m.brushed,.015);
  for(let lane=0;lane<3;lane++){
-  const x=(lane-1)*3.5,z=(1-lane)*.37,s=stage(root,[0,.58+lane*.17,-.4],lane*.19),g=s.group;stages.push(s);
-  box(g,[3.18,5.95,.29],[x,.13,z-1.48],m.navy,.09);
-  box(g,[2.74,5.42,.085],[x,.09,z-1.29],m.dark,.02);
-  for(let q=0;q<11;q++)box(g,[2.62,.022,.026],[x,-2.3+q*.46,z-1.23],m.etched,.004);
-  // The opaque inner plane sits deep behind the luminous paths; sides carry the weight.
-  box(g,[2.76,.15,2.54],[x,-2.66,z-.02],m.inset,.025);
-  box(g,[2.76,.15,2.54],[x,2.8,z-.02],m.inset,.025);
-  for(const dx of [-1.53,1.53]){
-    box(g,[.24,6.04,2.88],[x+dx,.11,z-.18],m.brushed,.045);
-    box(g,[.045,5.94,.16],[x+dx+.035,.11,z+1.31],m.brushed,.014);
-  }
-  for(const y of [-2.82,3.04]){
-    box(g,[3.1,.16,2.87],[x,y,z-.18],m.brushed,.036);
-    box(g,[2.8,.09,.27],[x,y,z+1.31],m.brushed,.018);
-  }
-  // A deep recessed opening; density varies instead of a bank of equal parallel strokes.
+  const x=(lane-1)*3.5,z=(1-lane)*.25,s=stage(root,[0,.58+lane*.17,-.4],lane*.19),g=s.group;stages.push(s);
+  rackStructure(g,m,{width:3.17,height:6.1,depth:2.94,position:[x,.10,z-.1]});
+  // Six Service Gateways and two ARAD Controllers: the user's supplied product mix.
+  for(let row=0;row<6;row++)addGateway(g,m,{width:2.61,height:.235,depth:1.70,position:[x,2.19-row*.39,z+.33]});
+  for(let row=0;row<2;row++)addController(g,m,{width:2.61,height:.48,depth:1.85,position:[x,-1.04-row*.66,z+.255]});
+  box(g,[2.63,.30,.06],[x,-2.35,z+1.2],m.dark,.012);
+  for(let i=0;i<18;i++)box(g,[.068,.19,.03],[x-1.18+i*.139,-2.35,z+1.25],m.etched,.004);
   const curves=[];
   for(let f=0;f<108;f++){
-    const u=(f%36/35-.5)*2.22,layer=Math.floor(f/36),depth=-.92+layer*.77+rand(f+lane*90)*.18,sway=(rand(f*3.1)-.5)*.4;
-    curves.push(path([[x+u*.72,-2.55,z+depth*.72],[x+u*.8,-1.8,z+depth+.15],[x+u+sway,-.12,z+depth+.3*Math.sin(f*.23)],[x+u*.94,1.75,z+depth+.17],[x+u*.7,2.72,z+depth*.72]]));
-  }
-  // Machined connector cassettes at both ends anchor the layered optical field.
-  for(const yy of[-2.65,2.82])for(let q=0;q<9;q++){
-    box(g,[.19,.14,2.3],[x-.96+q*.24,yy,z-.03],m.etched,.016);
-    box(g,[.08,.033,2.2],[x-.96+q*.24,yy+.09,z-.03],m.dark,.005);
+   const side=f<54?-1:1,j=f%54,layer=Math.floor(j/18),u=j%18/17,depth=-.65+layer*.71;
+   const xx=x+side*(1.18+u*.21),bend=side*(.035+.06*Math.sin(f*.43));
+   curves.push(path([[x+side*.95,-2.62,z+.85],[xx,-1.88,z+depth],[xx+bend,.1,z+depth+.15],[xx,1.68,z+depth],[x+side*1.02,2.57,z+.93]]));
   }
   fiberBank(g,curves,lane,signals);
-  marker(g,[2.0,.065,.1],[x,-2.67,z+1.49],lane,highlights,m);marker(g,[2.0,.065,.1],[x,2.83,z+1.49],lane,highlights,m);
-  // Rear seams, side relief and narrow machined base toes are physically attached.
-  for(let k=0;k<11;k++)box(g,[.045,4.9,.065],[x+1.65,.05,z-1.23+k*.24],m.dark,.006);
-  box(root,[2.54,.16,3.42],[x,-2.8,z+.18],m.dark,.03);
-  anchors.push({start:[x,-2.65,z+1.6],end:[x,2.82,z+1.6]});
+  marker(g,[2.04,.045,.055],[x,-2.67,z+1.48],lane,highlights,m);
+  anchors.push({start:[x,-2.1,z+1.5],end:[x,2.0,z+1.5]});
  }
  return finish({root,signals,highlights,anchors,stages,direction:new THREE.Vector3(7.8,4.9,17),targetOffset:new THREE.Vector3(0,-.08,0),groundY:-3.48,cameraDrift:[-.075,.025],fill:.91,duration:4.4});
 }
 
 function accelerate(){
  const root=new THREE.Group(),m=kit(),signals=[],highlights=[],anchors=[],stages=[];
- // Long interleaved transmission engine: horizontal force and strongly recessed channels.
- box(root,[17.4,.85,6.5],[0,-1.72,0],m.dark,.13);
- box(root,[16.9,.18,6.42],[0,-2.2,0],m.brushed,.035);
- for(let k=0;k<5;k++)box(root,[15.6,.035,.06],[0,-1.46-k*.13,3.3],m.etched,.006);
- box(root,[17.1,.12,6.05],[0,-1.23,0],m.brushed,.03);
- for(const x of [-7.6,7.6])box(root,[1.05,.5,5.9],[x,-.98,0],m.navy,.08);
+ // A real vertical equipment proportion; Controller fronts provide the fine-scale detail.
+ rackStructure(root,m,{width:5.65,height:8.4,depth:4.1,position:[0,.1,0]});
+ box(root,[5.95,.16,4.6],[0,-4.31,0],m.brushed,.025);
  for(let lane=0;lane<3;lane++){
-   const z=(lane-1)*1.92,y=(2-lane)*.7-.55,s=stage(root,[-.9-lane*.2,.25,0],lane*.14),g=s.group;stages.push(s);
-   box(g,[16.25,.46,1.72],[0,y,z],m.navy,.075);
-   box(g,[15.82,.065,1.39],[0,y+.265,z],m.inset,.015);
-   for(const off of [-.82,.82])box(g,[16.3,.18,.13],[0,y+.25,z+off],m.brushed,.035);
-   // Tall rear fins and short foreground lips expose each luminous core at the camera angle.
-   for(let i=0;i<29;i++){
-     const x=-7.6+i*.54,hh=.52+(Math.sin(i/28*Math.PI)*.38);
-     box(g,[.105,hh,.3],[x,y+.32+hh/2,z-.65],i%7===0?m.brushed:m.etched,.018);
-     box(g,[.105,.22,.23],[x,y+.4,z+.65],m.etched,.016);
-     box(g,[.105,.075,1.24],[x,y+.33,z],m.dark,.012);
-   }
-   const curves=[];
-   for(let f=0;f<96;f++){
-     const off=(f%32/31-.5)*1.13,layer=Math.floor(f/32),h=.06+layer*.14+rand(f+lane*71)*.07;
-     curves.push(path([[-8.0,y+.43,z+off*.74],[-5.9,y+.44+h,z+off],[-1.3,y+.46+h,z+off+.07*Math.sin(f*.13)],[3.9,y+.44+h,z+off],[8.01,y+.43,z+off*.74]]));
-   }
-   fiberBank(g,curves,lane,signals);
-   for(const x of [-8.12,8.12]){box(g,[.57,1.05,1.83],[x,y+.13,z],m.brushed,.05);box(g,[.055,.45,1.42],[x+Math.sign(x)*.23,y+.18,z],m.inset,.012);}
-   marker(g,[.055,.07,1.18],[8.01,y+.42,z],lane,highlights,m);
-   anchors.push({start:[-8,y+.52,z],end:[8,y+.52,z]});
+  const y=2.43-lane*2.26,s=stage(root,[0,.28,-.22],lane*.14),g=s.group;stages.push(s);
+  for(let row=0;row<3;row++)addController(g,m,{width:5.03,height:.61,depth:3.38,position:[0,y-row*.71,.31]});
+  const curves=[];
+  for(let f=0;f<96;f++){
+   const side=f<48?-1:1,j=f%48,layer=Math.floor(j/16),u=j%16/15,xx=side*(2.43+u*.20),d=-1.27+layer*.86;
+   curves.push(path([[side*1.91,y-1.7,1.7],[xx,y-1.31,d+.15],[xx+side*.035,y-.70,d],[xx,y+.1,d+.14],[side*1.91,y+.45,1.7]]));
+  }
+  fiberBank(g,curves,lane,signals);
+  marker(g,[4.49,.035,.065],[0,y-1.75,2.06],lane,highlights,m);
+  anchors.push({start:[-2.45,y-.7,2.15],end:[2.45,y-.7,2.15]});
  }
- // Dark end manifold with a single broad metal surface; never chrome on every edge.
- box(root,[1.1,3.37,6.64],[8.8,-.05,0],m.navy,.12);
- box(root,[.075,3.02,6.21],[9.37,-.03,0],m.brushed,.02);
- for(let i=0;i<21;i++)box(root,[.07,.04,5.7],[9.43,-1.22+i*.12,0],m.dark,.007);
- box(root,[.07,2.62,.075],[9.47,.05,2.96],m.silver,.012);
- return finish({root,signals,highlights,anchors,stages,direction:new THREE.Vector3(10,9.2,21),targetOffset:new THREE.Vector3(.18,-.05,0),groundY:-2.34,cameraDrift:[-.105,-.015],fill:.92,duration:4.4});
+ return finish({root,signals,highlights,anchors,stages,direction:new THREE.Vector3(9.4,5.8,20),targetOffset:new THREE.Vector3(0,-.04,0),groundY:-4.42,cameraDrift:[-.105,-.015],fill:.92,duration:4.4});
 }
 
 function connect(){
- const root=new THREE.Group(),m=kit(),signals=[],highlights=[],anchors=[],stages=[],details=[];
- // A continuous industrial land section, with three architectural masses and a usable open tunnel.
- box(root,[5.2,2.1,8.1],[-4.3,-1.48,.05],m.concrete,.06);
- box(root,[5.2,2.1,8.1],[4.3,-1.48,.05],m.concrete,.06);
- box(root,[3.4,2.1,4.2],[0,-1.48,-1.91],m.concrete,.04);
- // Front wall is genuinely removed at the tunnel; no drawn tunnel sticker.
- box(root,[13.98,.3,8.2],[0,-.26,.05],m.brushed,.045);
- box(root,[13.7,.08,7.94],[0,-.055,.05],m.dark,.018);
- box(root,[13.6,.1,8.0],[0,-2.59,.05],m.dark,.022);
- // Deep foreground incision: black recess and two thick section cheeks.
- box(root,[5.2,1.84,.26],[-4.29,-1.45,4.16],m.concrete,.025);
- box(root,[5.2,1.84,.26],[4.29,-1.45,4.16],m.concrete,.025);
- 
- box(root,[2.85,.09,4.2],[0,-2.32,2.26],m.dark,.02);
- const arch=new THREE.Shape();arch.moveTo(-1.59,-2.36);arch.lineTo(-1.59,-1.63);arch.absarc(0,-1.63,1.59,Math.PI,0,true);arch.lineTo(1.59,-2.36);arch.closePath();const hole=new THREE.Path();hole.moveTo(-1.32,-2.27);hole.lineTo(1.32,-2.27);hole.lineTo(1.32,-1.63);hole.absarc(0,-1.63,1.32,0,Math.PI,false);hole.closePath();arch.holes.push(hole);
- const shell=new THREE.Mesh(new THREE.ExtrudeGeometry(arch,{depth:3.5,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.025,bevelThickness:.025,curveSegments:32}),m.brushed);shell.position.z=.72;shell.castShadow=true;shell.receiveShadow=false;root.add(shell);
- // Main hall is a large dark satin mass with an exposed service interior to the right.
- const hall=stage(root,[0,.7,-.2],.05);stages.push(hall);
- box(hall.group,[7.9,3.65,4.65],[-2.3,1.88,-.83],m.navy,.09);
- const roof=new THREE.Group();hall.group.add(roof);details.push({group:roof});
- box(roof,[8.03,.2,4.74],[-2.3,3.8,-.83],m.brushed,.035);
- for(let j=0;j<23;j++)box(roof,[.042,.035,4.35],[-5.84+j*.32,3.925,-.83],m.dark,.006);
- box(roof,[5.9,.24,.82],[-2.3,4.0,-1.2],m.dark,.035);
- for(let f=0;f<11;f++)box(roof,[.095,.19,.7],[-4.75+f*.49,4.08,-1.2],m.brushed,.014);
- for(const x of [-5.95,1.35])box(hall.group,[.07,.075,4.3],[x,3.94,-.83],m.dark,.012);
- box(hall.group,[7.52,3.2,.12],[-2.3,1.82,1.55],m.dark,.025);
- for(let j=0;j<24;j++)box(hall.group,[7.3,.027,.038],[-2.3,.38+j*.12,1.64],m.brushed,.005);
- for(const xx of[-5.8,1.3])box(hall.group,[.09,3.48,4.42],[xx,1.86,-.83],m.brushed,.015);
- for(let i=0;i<12;i++)box(hall.group,[.09,3.02,.14],[-5.78+i*.63,1.88,1.64],m.brushed,.012);
- box(hall.group,[7.4,.08,.09],[-2.3,2.68,1.75],m.navy,.012);
- // A secondary high service tower and a lower uncovered plant bay create a stepped skyline.
- const tower=stage(root,[0,1,-.12],.3);stages.push(tower);
- box(tower.group,[3.03,5.22,3.3],[4.63,2.66,-2.05],m.dark,.08);
- box(tower.group,[3.16,.15,3.43],[4.63,5.34,-2.05],m.brushed,.026);
- box(tower.group,[.1,5.0,3.1],[6.18,2.68,-2.05],m.brushed,.018);
- for(let i=0;i<7;i++)box(tower.group,[2.7,.065,.08],[4.63,.55+i*.63,-.34],m.brushed,.009);
- const bay=stage(root,[.25,.5,.12],.16);stages.push(bay);
- box(bay.group,[4.65,.18,3.92],[4.37,.18,1.65],m.brushed,.03);
- for(const x of [2.25,6.48])for(const z of [.04,3.3]){box(bay.group,[.2,2.54,.2],[x,1.54,z],m.brushed,.025);box(bay.group,[.37,.1,.37],[x,.31,z],m.dark,.015);}
- for(const z of [.04,3.3])box(bay.group,[4.53,.23,.22],[4.37,2.84,z],m.brushed,.03);
- box(bay.group,[4.53,.12,1.02],[4.37,3.01,.4],m.navy,.025);
- for(const x of [3.05,4.13,5.21]){box(bay.group,[.84,1.78,.92],[x,1.12,1.4],m.navy,.045);box(bay.group,[.72,1.55,.06],[x,1.14,1.89],m.inset,.018);for(let j=0;j<5;j++)box(bay.group,[.56,.028,.04],[x,.55+j*.1,1.94],m.brushed,.005);}
- for(let k=0;k<17;k++)box(tower.group,[.035,4.5,.05],[3.41+k*.15,2.65,-.32],m.brushed,.005);
- for(let k=0;k<8;k++){
-  box(root,[5.0,.028,.03],[-4.3,-.68-k*.2,4.3],m.brushed,.005);
-  box(root,[5.0,.028,.03],[4.3,-.68-k*.2,4.3],m.brushed,.005);
- }
- // 5G equipment remains subordinate to architecture.
- cylinder(root,.075,1.4,[-4.9,4.59,-1.7],m.brushed);box(root,[.34,.83,.2],[-4.9,5.0,-1.54],m.porcelain,.035);
- for(const p of [[-1.15,2.79,1.79],[2.45,2.91,1.15],[5.95,2.91,3.15]])box(root,[.3,.18,.28],p,m.porcelain,.025);
+ const root=new THREE.Group(),m=kit(),signals=[],highlights=[],anchors=[],stages=[];
+ // The connected field is explained by software behind the physical network equipment.
+ // This is an abstract interface diagram, not a screenshot or a claim about a shipped UI.
+ const display=stage(root,[0,.45,-.35],0),network=stage(root,[.25,.32,0],.16),endpoint=stage(root,[0,.25,.18],.3);stages.push(display,network,endpoint);
+ const screen=addMonitor(display.group,m,{width:10.6,height:6.1,depth:.28,position:[-.45,2.0,-1.6]});screen.rotation.y=-.065;
+ box(root,[11.25,.21,5.0],[0,-2.52,.25],m.dark,.055);
+ box(root,[10.84,.055,4.73],[0,-2.38,.25],m.brushed,.012);
+ addGateway(network.group,m,{width:9.0,height:.73,depth:3.02,position:[0,-1.50,.45]});
+ addGateway(network.group,m,{width:8.7,height:.70,depth:3.05,position:[.12,-.70,.22]});
+ const point=addPointGateway(endpoint.group,m,{width:2.65,height:.66,depth:1.73,position:[2.80,-1.99,2.18]});point.rotation.y=-.13;
+ const point2=addPointGateway(endpoint.group,m,{width:2.15,height:.55,depth:1.42,position:[-.67,-2.02,2.41]});point2.rotation.y=-.06;
  const routes=[
-  [[-4.9,4.99,-1.3],[-3.9,4.8,-.55],[-1.85,4.15,.12],[1.7,3.3,1.2],[5.75,2.91,3.15]],
-  [[-1.15,2.88,1.92],[.35,3.12,2.18],[2.45,3.03,1.35],[4.05,3.22,2.32],[5.95,3.02,3.3]],
-  [[4.13,.61,1.97],[3.6,.35,3.12],[1.04,.25,3.66],[.96,-.56,4.53],[.7,-1.35,4.53],[.2,-1.99,4.4],[-.45,-2.07,3.55],[-.6,-2.07,1.8]]
+  [[-4.1,2.1,-1.3],[-5.0,1.58,-.55],[-5.0,.1,1.1],[-4.5,-.6,1.95],[-2.7,-.7,1.95]],
+  [[-2.9,-.40,1.9],[-1.4,-.08,2.0],[.7,-.05,1.98],[2.6,-.3,1.96],[4.1,-.65,1.92]],
+  [[3.9,-1.3,1.99],[4.6,-1.6,2.12],[4.45,-1.90,3.00],[2.8,-2.02,3.14],[1.2,-2.08,3.18],[-.66,-2.02,3.14]]
  ];
- pipe(root,path(routes[2]),.063,m.dark);
  for(let lane=0;lane<3;lane++){
-   const curves=[];for(let i=0;i<(lane===2?48:54);i++){const spread=(i/53-.5),layer=Math.floor(i/18)-1;curves.push(path(routes[lane].map((p,j)=>{const fan=Math.sin(j/(routes[lane].length-1)*Math.PI);return[p[0]+spread*(lane===2?.33:.3),p[1]+fan*spread*(lane===2?.28:.85),p[2]+fan*layer*.19+spread*.12]})));}
-   fiberBank(root,curves,lane,signals);const end=routes[lane].at(-1);marker(root,[.22,.07,.22],end,lane,highlights,m);anchors.push({start:routes[lane][0],end});
+  const curves=[];const count=lane===2?48:54;
+  for(let i=0;i<count;i++){const spread=i/(count-1)-.5,layer=Math.floor(i/18)-1;curves.push(path(routes[lane].map((p,j)=>{const fan=Math.sin(j/(routes[lane].length-1)*Math.PI);return[p[0]+spread*.23,p[1]+fan*spread*.40,p[2]+fan*layer*.10+spread*.09];})));}
+  fiberBank(root,curves,lane,signals);const end=routes[lane].at(-1);marker(root,[.18,.035,.1],end,lane,highlights,m);anchors.push({start:routes[lane][0],end});
  }
- return finish({root,signals,highlights,anchors,stages,details,direction:new THREE.Vector3(11,7.3,18),targetOffset:new THREE.Vector3(0,-.25,.1),groundY:-2.78,cameraDrift:[.09,.025],fill:.91,duration:4.6});
+ return finish({root,signals,highlights,anchors,stages,direction:new THREE.Vector3(7.6,4.0,22),targetOffset:new THREE.Vector3(0,-.15,.1),groundY:-2.65,cameraDrift:[.09,.025],fill:.92,duration:4.6});
 }
+
 
 function studio(renderer,scene,mobile){const env=new THREE.Scene();env.background=new THREE.Color('#263348');for(const[w,h,x,y,z,color,power]of[[19,9,-7,13,8,'#E3EAF6',2.3],[4,13,11,6,-2,'#9AAEC9',1.9],[13,3,-2,6,-10,'#A8BEDC',1.6],[3,8,-13,2,3,'#D7E3F5',1.45],[9,2,0,-8,6,'#19263C',.6]]){const soft=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color,side:THREE.DoubleSide}));soft.material.color.multiplyScalar(power);soft.position.set(x,y,z);soft.lookAt(0,0,0);env.add(soft);}const pmrem=new THREE.PMREMGenerator(renderer),environment=pmrem.fromScene(env,.055,.1,70);scene.environment=environment.texture;scene.environmentIntensity=1.12;env.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});pmrem.dispose();const key=new THREE.DirectionalLight('#DDE7F7',.95);key.position.set(-7,14,9);key.castShadow=true;key.shadow.mapSize.set(mobile?1024:2048,mobile?1024:2048);Object.assign(key.shadow.camera,{left:-14,right:14,top:12,bottom:-12,near:.1,far:55});key.shadow.normalBias=.055;key.shadow.bias=.00005;scene.add(key);const rim=new THREE.DirectionalLight('#7D9FCF',.42);rim.position.set(8,5,-9);scene.add(rim);scene.add(new THREE.HemisphereLight('#D8E5F7','#050913',.55));return{environment,key};}
 function releaseScene(scene){const geometries=new Set(),materials=new Set(),textures=new Set();scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)for(const m of Array.isArray(o.material)?o.material:[o.material])materials.add(m);});for(const m of materials){for(const v of Object.values(m))if(v?.isTexture)textures.add(v);m.dispose();}geometries.forEach(g=>g.dispose());textures.forEach(t=>t.dispose());}
@@ -255,7 +203,7 @@ function mount(container,options={}){
    offset.y+=offset.length()*.047*smooth(.08,.55,sp);aim.x+=.45*smooth(.7,1,sp);
   }else{
    yaw-=.12*smooth(.1,.72,sp);zoom=1-.055*smooth(.1,.58,sp);
-   const underground=smooth(.72,.88,sp);zoom-=.27*underground;aim.x+=.45*underground;aim.z+=1.5*underground;aim.y-=1.4*underground;offset.y-=offset.length()*.11*underground;
+   const endpoint=smooth(.72,.88,sp);zoom-=.08*endpoint;aim.x+=.30*endpoint;aim.z+=.45*endpoint;aim.y-=.40*endpoint;offset.y-=offset.length()*.025*endpoint;
   }
   offset.applyAxisAngle(new THREE.Vector3(0,1,0),yaw).multiplyScalar(zoom);offset.y+=model.cameraDrift[1]*settle*offset.length();
   camera.position.copy(aim).add(offset);camera.lookAt(aim);cameraAim.copy(aim);
@@ -271,8 +219,8 @@ function mount(container,options={}){
  function visibility(){chooseActive();}
  function fallbackVisibility(){const r=container.getBoundingClientRect();item.ratio=r.width&&r.height&&r.bottom>0&&r.right>0&&r.top<innerHeight&&r.left<innerWidth?1:0;chooseActive();}
  function dispose(){if(item.disposed)return;item.disposed=true;cancelAnimationFrame(raf);raf=0;intersectionObserver?.disconnect();resizeObserver?.disconnect();document.removeEventListener('visibilitychange',visibility);window.removeEventListener('resize',fallbackVisibility);window.removeEventListener('scroll',fallbackVisibility);canvas?.removeEventListener('webglcontextlost',contextLost);if(scene)releaseScene(scene);else floorMaterial.dispose();lighting?.environment.dispose();for(const p of composer?.passes||[])p.dispose?.();composer?.dispose();renderer?.dispose();renderer?.forceContextLoss();canvas?.remove();registry.delete(item);mounted.delete(container);delete container.dataset.objectReady;delete container.dataset.objectMode;delete container.dataset.objectAnimating;delete container.dataset.objectMotion;delete container.dataset.objectProgress;container.style.position=originalPosition;if(active===item)active=null;chooseActive();}
- const api={setProgress(value){const next=clamp(Number(value)||0,0,1);if(Math.abs(next-scrollProgress)<.0001)return;scrollProgress=next;if(next>.015&&model){elapsed=Math.max(elapsed,model.duration);runUntil=elapsed;introStart=0;cancelAnimationFrame(raf);raf=0;last=0;}if(enabled&&init())draw(elapsed);},getState(){return{version:'27.0.7',type,progress:scrollProgress,mode,reducedMotion:reduced,ready,active:enabled,paused,failed:item.failed,fibers:model?.signals.reduce((a,b)=>a+b.count,0)||0,camera:camera?.position.toArray(),target:cameraAim.toArray()};},setMode(index){const next=clamp(Math.round(Number(index)||0),0,2);if(next===mode)return;modeFrom=[...weights];mode=next;modeTime=currentTime;runUntil=Math.max(runUntil,elapsed+1.05);container.dataset.objectMode=String(mode);if(enabled&&init()){draw(currentTime);schedule();}},replay(){if(item.disposed||item.failed)return;introStart=currentTime;runUntil=elapsed+(model?.duration||4.8);if(enabled&&init()){draw(currentTime);schedule();}},setPaused(value){paused=!!value;if(paused){cancelAnimationFrame(raf);raf=0;last=0;container.dataset.objectAnimating='false';container.dataset.objectMotion='paused';}else{if(enabled&&renderer)draw(currentTime);schedule();}},dispose,getAnchors(){if(!model||!camera||!width||!height)return null;model.root.updateMatrixWorld(true);camera.updateMatrixWorld();const project=p=>{const v=new THREE.Vector3(...p).applyMatrix4(model.root.matrixWorld).project(camera);return{x:(v.x+1)/2,y:(1-v.y)/2,visible:v.z>-1&&v.z<1&&Math.abs(v.x)<1&&Math.abs(v.y)<1};};const pts=model.anchors[mode];return{type,mode,start:project(pts.start),end:project(pts.end)};},render(time){if(item.disposed||item.failed||!enabled)return;if(init()){if(Number.isFinite(time))elapsed=Math.max(0,time);draw(elapsed);}}};
+ const api={setProgress(value){const next=clamp(Number(value)||0,0,1);if(Math.abs(next-scrollProgress)<.0001)return;scrollProgress=next;if(next>.015&&model){elapsed=Math.max(elapsed,model.duration);runUntil=elapsed;introStart=0;cancelAnimationFrame(raf);raf=0;last=0;}if(enabled&&init())draw(elapsed);},getState(){return{version:'34.0.0',type,progress:scrollProgress,mode,reducedMotion:reduced,ready,active:enabled,paused,failed:item.failed,fibers:model?.signals.reduce((a,b)=>a+b.count,0)||0,camera:camera?.position.toArray(),target:cameraAim.toArray()};},setMode(index){const next=clamp(Math.round(Number(index)||0),0,2);if(next===mode)return;modeFrom=[...weights];mode=next;modeTime=currentTime;runUntil=Math.max(runUntil,elapsed+1.05);container.dataset.objectMode=String(mode);if(enabled&&init()){draw(currentTime);schedule();}},replay(){if(item.disposed||item.failed)return;introStart=currentTime;runUntil=elapsed+(model?.duration||4.8);if(enabled&&init()){draw(currentTime);schedule();}},setPaused(value){paused=!!value;if(paused){cancelAnimationFrame(raf);raf=0;last=0;container.dataset.objectAnimating='false';container.dataset.objectMotion='paused';}else{if(enabled&&renderer)draw(currentTime);schedule();}},dispose,getAnchors(){if(!model||!camera||!width||!height)return null;model.root.updateMatrixWorld(true);camera.updateMatrixWorld();const project=p=>{const v=new THREE.Vector3(...p).applyMatrix4(model.root.matrixWorld).project(camera);return{x:(v.x+1)/2,y:(1-v.y)/2,visible:v.z>-1&&v.z<1&&Math.abs(v.x)<1&&Math.abs(v.y)<1};};const pts=model.anchors[mode];return{type,mode,start:project(pts.start),end:project(pts.end)};},render(time){if(item.disposed||item.failed||!enabled)return;if(init()){if(Number.isFinite(time))elapsed=Math.max(0,time);draw(elapsed);}}};
  registry.add(item);mounted.set(container,api);container.dataset.objectMode='0';document.addEventListener('visibilitychange',visibility);if('ResizeObserver'in window){resizeObserver=new ResizeObserver(resize);resizeObserver.observe(container);}if('IntersectionObserver'in window){intersectionObserver=new IntersectionObserver(entries=>{for(const e of entries)if(e.target===container)item.ratio=e.isIntersecting?e.intersectionRatio:0;chooseActive();},{threshold:[0,.01,.1,.25,.5,.75,1]});intersectionObserver.observe(container);}else window.addEventListener('scroll',fallbackVisibility,{passive:true});window.addEventListener('resize',fallbackVisibility,{passive:true});fallbackVisibility();return api;
 }
 export {isolate,accelerate,connect,mount};
-if(typeof window!=='undefined')window.ARADObjects={mount,version:'27.0.7'};
+if(typeof window!=='undefined')window.ARADObjects={mount,version:'34.0.0'};
