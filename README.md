@@ -1,30 +1,29 @@
-# ARAD Networks · Website Preview
+# ARAD Networks · 홈페이지 미리보기
 
-[Open the website](https://kimrlatkd-jpg.github.io/arad-networks-preview/)
+[홈페이지 열기](https://kimrlatkd-jpg.github.io/arad-networks-preview/)
 
-아라드 네트웍스 홈페이지의 디자인·인터랙션 검토용 사이트입니다. 현재 디자인: V28.
+아라드 네트웍스 홈페이지의 디자인과 인터랙션 검토용 사이트입니다. 현재 디자인: V29.
 
-- 빛과 서버랙으로 이어지는 브랜드 인트로
-- 화면 전체를 채우며 오른쪽에서 진입하는 세 갈래 사업 선택 화면
+- 화면 비율에 맞춰 좌우 여백 없이 채우는 빛과 서버랙 인트로
+- 단색 배경과 독립적인 3D 오브젝트로 구분한 세 사업 선택 화면
+- 오른쪽에서 하나씩 이어지는 세 패널의 부드러운 등장 모션
 - Isolate AI · Accelerate AI · Connect AI의 개별 사업 페이지
-- 깊이 있는 금속 구조와 다층 광섬유로 구분한 사업별 인터랙티브 3D
-- 같은 3D의 카메라·구조·빛이 설명과 이어지는 세 단계 스크롤 장면
-- 작은 화면과 모션 감소 설정에서는 순서대로 읽는 설명 제공
-- 한글·영문, 모바일 화면, 기술 개요 PDF
-- 회사소개, 기술 인사이트, 이메일 문의 작성
+- 사업별 금속 구조와 빛, 설명에 이어지는 세 단계 스크롤 장면
+- 한글·영문, 모바일 화면, 모션 감소 설정과 3D 대체 이미지 지원
+- 회사소개, 기술 인사이트, 기술 개요 PDF, 이메일 문의 작성
 
-## Run locally
+## 로컬에서 실행
 
-Serve the `site` directory with any static HTTP server. No API keys or backend are required.
+정적 HTTP 서버로 `site` 폴더를 열면 됩니다. API 키나 별도 백엔드는 필요하지 않습니다.
 
-## Edit
+## 수정과 배포
 
-HTML, CSS and JavaScript live in `site/`. Editable 3D source and build instructions are in `site/assets/source/`.
+HTML, CSS, JavaScript는 `site/`에 있습니다. 편집 가능한 3D 소스와 기존 빌드 안내는 `site/assets/source/`에서 확인할 수 있습니다. V29 사업 선택 화면의 3D 소스는 `selector-scene-source.js`입니다.
 
-Changes to `site/**` on `main` run the Pages workflow. The two ZIPs hold the reviewed static source and the preserved intro media. Normal edits use the expanded source files; intentional archive imports are available through the manual workflow input.
+`main` 브랜치의 `site/**` 변경 사항은 Pages 워크플로로 배포됩니다. `source.zip`은 검토한 정적 소스이며, 영상은 기존 `media.zip`을 그대로 사용합니다. 일반 수정은 압축을 푼 소스 파일에서 진행하고, ZIP을 반영할 때는 수동 워크플로의 아카이브 가져오기 옵션을 사용합니다.
 
-## Notes
+## 참고 사항
 
-The 3D models are conceptual illustrations. AMLI performance effects remain under validation. The enquiry form prepares an email for the visitor to review and send; it does not store form submissions.
+3D 모델은 기술을 설명하기 위한 콘셉트 이미지입니다. AMLI의 성능 효과는 검증 중입니다. 문의 양식은 방문자가 확인하고 보낼 이메일을 작성하며, 별도로 제출 내용을 저장하지 않습니다.
 
-Brand assets and original site content are reserved to their respective owners. Third-party notices are in `site/licenses/` and `site/assets/fonts/OFL.txt`.
+브랜드 자산과 원본 콘텐츠의 권리는 각 권리자에게 있습니다. 외부 라이브러리와 글꼴의 고지는 `site/licenses/`와 `site/assets/fonts/OFL.txt`에 있습니다.
