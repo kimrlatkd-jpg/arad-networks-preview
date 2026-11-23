@@ -1,7 +1,7 @@
 'use strict';
 const oldDetail = location.hash.slice(1); if(['isolate','accelerate','connect'].includes(oldDetail)) location.replace('en/'+oldDetail+'.html');
 const routeNames = {
-  home: 'ARAD Networks — ARAD builds the road for AI',
+  home: 'ARAD Networks — Engineering connections',
   business: 'Businesses — ARAD Networks'
 };
 const views = [...document.querySelectorAll('[data-view]')];
@@ -31,12 +31,12 @@ const HERO_MEDIA = {
   revealAt: 7.32,
   '16x9': {
     aspect: 16 / 9, intro: 'assets/intro-16x9-web.mp4?v=23',
-    idle: 'assets/idle-16x9-web.mp4?v=23', poster: 'assets/poster-16x9.jpg?v=23', introPoster: 'assets/black-opening.svg?v=33',
+    idle: 'assets/idle-16x9-web.mp4?v=23', poster: 'assets/poster-16x9.jpg?v=23', introPoster: 'assets/intro-poster-16x9.jpg?v=23',
     object: { cx: 0.7247996067577138, cy: 0.5285044690815344, width: 0.5504007864845725, height: 0.9429910618369313 }
   },
   '21x9': {
     aspect: 21 / 9, intro: 'assets/intro-21x9-web.mp4?v=23',
-    idle: 'assets/idle-21x9-web.mp4?v=23', poster: 'assets/poster-21x9.jpg?v=23', introPoster: 'assets/black-opening.svg?v=33',
+    idle: 'assets/idle-21x9-web.mp4?v=23', poster: 'assets/poster-21x9.jpg?v=23', introPoster: 'assets/intro-poster-21x9.jpg?v=23',
     object: { cx: 0.7247857066052965, cy: 0.5278841194890873, width: 0.550428586789407, height: 0.9442317610218254 }
   }
 };
@@ -95,18 +95,8 @@ function prepareHeroTypography() {
   enter(heroCopy.querySelector('.hero-description'), 2.94, 620, '6px');
   enter(heroCopy.querySelector('.hero-message-cue'), 3.14, 560, '4px');
   enter(heroCopy.querySelector('.hero-rule'), HERO_MEDIA.copyRevealAt, 560, '4px');
-  enter(heroCopy.querySelector('.hero-evidence'), 3.65, 740, '8px');
 }
 function updateHeroCopy() {
-  const openingTime = introCompleted || completedPosterVisible || motionSuppressed() ? 8 : (pendingIntroTime || video.currentTime || 0);
-  const reveal = Math.min(1, Math.max(0, (openingTime - .18) / .48));
-  const exposure = reveal * reveal * (3 - 2 * reveal);
-  document.documentElement.style.setProperty('--opening-black', String(1 - exposure));
-  document.body.classList.toggle('hero-opening', exposure < 1);
-  const deviceImage = document.querySelector('.hero-real-device img');
-  const blend = deviceImage?.complete && deviceImage.naturalWidth ? Math.min(1, Math.max(0, (openingTime - 4.05) / 1.15)) : 0;
-  heroStage.style.setProperty('--real-device', String(blend * blend * (3 - 2 * blend)));
-
   const settled = introCompleted || completedPosterVisible || motionSuppressed();
   const time = settled ? 8 : (pendingIntroTime || video.currentTime || 0);
   const ready = settled || time >= HERO_MEDIA.copyRevealAt;
@@ -585,7 +575,6 @@ reduceMotion.addEventListener('change', () => {
   syncVideo();
 });
 wideScreen.addEventListener('change', configureHeroMedia);
-document.querySelector('.hero-real-device img')?.addEventListener('load', updateHotspot);
 window.addEventListener('resize', updateHotspot);
 if ('ResizeObserver' in window) new ResizeObserver(updateHotspot).observe(heroStage);
 document.addEventListener('visibilitychange', syncVideo);
