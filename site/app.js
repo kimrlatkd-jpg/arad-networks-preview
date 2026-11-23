@@ -274,6 +274,10 @@ function renderRoute(route, previous, { initial = false, fromHistory = false } =
   syncVideo();
 }
 
+let selectorAnimations = [];
+const selectorView = document.querySelector('#view-business');
+const homeView = document.querySelector('#view-home');
+const selectorEase = 'cubic-bezier(.65,0,.35,1)';
 function navigate(route, { fromHistory = false, initial = false } = {}) {
   if (!Object.hasOwn(routeNames, route)) route = 'home';
   if (!initial && (route === destination || (!destination && route === currentRoute))) return;
@@ -281,31 +285,61 @@ function navigate(route, { fromHistory = false, initial = false } = {}) {
   if (previous) scrollPositions.set(previous, window.scrollY);
   clearTimeout(changeTimer);
   clearTimeout(finishTimer);
+  const interrupted = document.body.classList.contains('is-route-moving');
+  const currentPose = interrupted ? getComputedStyle(selectorView).transform : null;
   const version = ++transitionVersion;
+  selectorAnimations.forEach(animation => animation.cancel());
+  selectorAnimations = [];
+  document.body.classList.remove('is-route-moving');
   destination = route;
-  transition.classList.remove('is-active');
   if (!fromHistory) setLocation(route, initial);
   const animated = !initial && !reduceMotion.matches;
-  if (!animated) {
-    renderRoute(route, previous, { initial, fromHistory });
-    destination = '';
-    return;
+  renderRoute(route, previous, { initial, fromHistory });
+  for (const view of views) view.classList.remove('is-entering');
+  if (!animated) { destination = ''; return; }
+
+  // Keep the original hero under the actual three-branch screen throughout.
+  homeView.hidden = false;
+  homeView.inert = route !== 'home';
+  selectorView.hidden = false;
+  selectorView.inert = route !== 'business';
+  document.body.classList.add('is-route-moving');
+  video.pause(); idleVideo.pause();
+  const entering = route === 'business';
+  const currentX = currentPose && currentPose !== 'none' ? new DOMMatrixReadOnly(currentPose).m41 / innerWidth : 0;
+  const distance = interrupted ? Math.max(.12, Math.min(1, entering ? currentX : 1-currentX)) : 1;
+  const duration = (entering ? 900 : 620) * Math.sqrt(distance);
+  const startPose = interrupted ? currentPose : (entering ? 'translate3d(100%,0,0)' : 'translate3d(0,0,0)');
+  const plane = selectorView.animate(
+    entering ? [{transform:startPose},{transform:'translate3d(0,0,0)'}]
+             : [{transform:startPose},{transform:'translate3d(100%,0,0)'}],
+    {duration, easing:selectorEase, fill:'both'}
+  );
+  selectorAnimations.push(plane);
+  if (entering) {
+    selectorView.querySelectorAll('.business-region').forEach((region,index) => {
+      // Material settles inside its fixed diagonal aperture; seams stay joined.
+      selectorAnimations.push(region.querySelector('.region-material').animate(
+        [{transform:'translate3d(38px,0,0) scale(1.1)'},{transform:'translate3d(0,0,0) scale(1)'}],
+        {duration:1000,delay:index*45,easing:selectorEase,fill:'both'}));
+      for (const node of region.querySelectorAll('.region-top,.region-copy')) {
+        selectorAnimations.push(node.animate(
+          [{opacity:0,transform:'translate3d(20px,0,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],
+          {duration:440,delay:420+index*65,easing:selectorEase,fill:'both'}));
+      }
+    });
   }
-  video.pause();
-  idleVideo.pause();
-  // Restart the same architectural plane transition after rapid navigation.
-  void transition.offsetWidth;
-  transition.classList.add('is-active');
-  changeTimer = window.setTimeout(() => {
+  const active = [...selectorAnimations];
+  Promise.all(active.map(animation => animation.finished.catch(() => {}))).then(() => {
     if (version !== transitionVersion) return;
-    renderRoute(route, previous, { fromHistory });
-  }, 300);
-  finishTimer = window.setTimeout(() => {
-    if (version !== transitionVersion) return;
-    transition.classList.remove('is-active');
+    active.forEach(animation => animation.cancel());
+    selectorAnimations = [];
+    homeView.hidden = route !== 'home';
+    selectorView.hidden = route !== 'business';
+    document.body.classList.remove('is-route-moving');
     destination = '';
-    for (const view of views) view.classList.remove('is-entering');
-  }, 780);
+    syncVideo();
+  });
 }
 
 // One handler supports all existing and future route links.
@@ -428,6 +462,10 @@ reduceMotion.addEventListener('change', () => {
     clearTimeout(changeTimer);
     clearTimeout(finishTimer);
     transition.classList.remove('is-active');
+    transitionVersion++;
+    selectorAnimations.forEach(animation => animation.cancel());
+    selectorAnimations = [];
+    document.body.classList.remove('is-route-moving');
     if (destination) {
       const next = destination;
       destination = '';
