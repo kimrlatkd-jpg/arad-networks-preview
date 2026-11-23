@@ -135,7 +135,7 @@ function updateHotspot() {
   if (!mediaVariant) return;
   const config = HERO_MEDIA[mediaVariant];
   const bounds = heroStage.getBoundingClientRect();
-  const width = Math.min(bounds.width, bounds.height * config.aspect);
+  const width = Math.max(bounds.width, bounds.height * config.aspect);
   const height = width / config.aspect;
   const left = (bounds.width - width) / 2;
   const top = (bounds.height - height) / 2;
@@ -146,11 +146,15 @@ function updateHotspot() {
   const y0 = Math.max(0, object.cy - object.height / 2);
   const x1 = Math.min(1, object.cx + object.width / 2);
   const y1 = Math.min(1, object.cy + object.height / 2);
+  // Match object-fit:cover, then intersect with the visible stage.
+  const hitLeft = Math.max(0, left + x0 * width);
+  const hitTop = Math.max(0, top + y0 * height);
+  const hitRight = Math.min(bounds.width, left + x1 * width);
+  const hitBottom = Math.min(bounds.height, top + y1 * height);
   Object.assign(objectHotspot.style, {
-    left: `${left + x0 * width}px`,
-    top: `${top + y0 * height}px`,
-    width: `${Math.max(0, x1 - x0) * width}px`,
-    height: `${Math.max(0, y1 - y0) * height}px`
+    left: `${hitLeft}px`, top: `${hitTop}px`,
+    width: `${Math.max(0, hitRight-hitLeft)}px`,
+    height: `${Math.max(0, hitBottom-hitTop)}px`
   });
 }
 
@@ -277,16 +281,16 @@ function renderRoute(route, previous, { initial = false, fromHistory = false } =
 let selectorAnimations = [];
 const selectorView = document.querySelector('#view-business');
 const homeView = document.querySelector('#view-home');
+const selectorPanels = [...selectorView.querySelectorAll('.business-region')];
 const selectorEase = 'cubic-bezier(.65,0,.35,1)';
 function navigate(route, { fromHistory = false, initial = false } = {}) {
   if (!Object.hasOwn(routeNames, route)) route = 'home';
   if (!initial && (route === destination || (!destination && route === currentRoute))) return;
   const previous = currentRoute;
   if (previous) scrollPositions.set(previous, window.scrollY);
-  clearTimeout(changeTimer);
-  clearTimeout(finishTimer);
+  clearTimeout(changeTimer); clearTimeout(finishTimer);
   const interrupted = document.body.classList.contains('is-route-moving');
-  const currentPose = interrupted ? getComputedStyle(selectorView).transform : null;
+  const poses = selectorPanels.map(panel => getComputedStyle(panel).transform);
   const version = ++transitionVersion;
   selectorAnimations.forEach(animation => animation.cancel());
   selectorAnimations = [];
@@ -296,9 +300,8 @@ function navigate(route, { fromHistory = false, initial = false } = {}) {
   const animated = !initial && !reduceMotion.matches;
   renderRoute(route, previous, { initial, fromHistory });
   for (const view of views) view.classList.remove('is-entering');
+  window.ARADSelectorExperience?.setVisible(route === 'business');
   if (!animated) { destination = ''; return; }
-
-  // Keep the original hero under the actual three-branch screen throughout.
   homeView.hidden = false;
   homeView.inert = route !== 'home';
   selectorView.hidden = false;
@@ -306,29 +309,23 @@ function navigate(route, { fromHistory = false, initial = false } = {}) {
   document.body.classList.add('is-route-moving');
   video.pause(); idleVideo.pause();
   const entering = route === 'business';
-  const currentX = currentPose && currentPose !== 'none' ? new DOMMatrixReadOnly(currentPose).m41 / innerWidth : 0;
-  const distance = interrupted ? Math.max(.12, Math.min(1, entering ? currentX : 1-currentX)) : 1;
-  const duration = (entering ? 900 : 620) * Math.sqrt(distance);
-  const startPose = interrupted ? currentPose : (entering ? 'translate3d(100%,0,0)' : 'translate3d(0,0,0)');
-  const plane = selectorView.animate(
-    entering ? [{transform:startPose},{transform:'translate3d(0,0,0)'}]
-             : [{transform:startPose},{transform:'translate3d(100%,0,0)'}],
-    {duration, easing:selectorEase, fill:'both'}
-  );
-  selectorAnimations.push(plane);
-  if (entering) {
-    selectorView.querySelectorAll('.business-region').forEach((region,index) => {
-      // Material settles inside its fixed diagonal aperture; seams stay joined.
-      selectorAnimations.push(region.querySelector('.region-material').animate(
-        [{transform:'translate3d(38px,0,0) scale(1.1)'},{transform:'translate3d(0,0,0) scale(1)'}],
-        {duration:1000,delay:index*45,easing:selectorEase,fill:'both'}));
-      for (const node of region.querySelectorAll('.region-top,.region-copy')) {
+  selectorPanels.forEach((panel,index) => {
+    const pose = poses[index];
+    const x = interrupted && pose !== 'none' ? new DOMMatrixReadOnly(pose).m41 : (entering ? innerWidth : 0);
+    const distance = Math.max(.12,Math.min(1,entering ? x/innerWidth : 1-x/innerWidth));
+    const duration = (entering ? 900 : 650)*(interrupted ? Math.sqrt(distance) : 1);
+    const delay = interrupted ? 0 : entering ? index*450 : (2-index)*120;
+    selectorAnimations.push(panel.animate(
+      [{transform:`translate3d(${x}px,0,0)`},{transform:entering ? 'translate3d(0,0,0)' : `translate3d(${innerWidth}px,0,0)`}],
+      {duration,delay,easing:selectorEase,fill:'both'}));
+    if (entering && !interrupted) {
+      for (const node of panel.querySelectorAll('.region-top,.region-copy')) {
         selectorAnimations.push(node.animate(
-          [{opacity:0,transform:'translate3d(20px,0,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],
-          {duration:440,delay:420+index*65,easing:selectorEase,fill:'both'}));
+          [{opacity:0,transform:'translate3d(16px,0,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],
+          {duration:350,delay:delay+530,easing:selectorEase,fill:'both'}));
       }
-    });
-  }
+    }
+  });
   const active = [...selectorAnimations];
   Promise.all(active.map(animation => animation.finished.catch(() => {}))).then(() => {
     if (version !== transitionVersion) return;
@@ -338,6 +335,7 @@ function navigate(route, { fromHistory = false, initial = false } = {}) {
     selectorView.hidden = route !== 'business';
     document.body.classList.remove('is-route-moving');
     destination = '';
+    window.ARADSelectorExperience?.setVisible(route === 'business');
     syncVideo();
   });
 }
@@ -466,6 +464,7 @@ reduceMotion.addEventListener('change', () => {
     selectorAnimations.forEach(animation => animation.cancel());
     selectorAnimations = [];
     document.body.classList.remove('is-route-moving');
+    window.ARADSelectorExperience?.setVisible(currentRoute === 'business');
     if (destination) {
       const next = destination;
       destination = '';
