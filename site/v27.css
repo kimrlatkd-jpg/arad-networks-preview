@@ -1,0 +1,85 @@
+/* The same camera travels from the opening object into its explanation. */
+.v27-site{--journey-top:88px}
+.v27-journey{position:relative;background:#000208}
+.v27-sticky{position:relative}
+.v27-story-marker{position:absolute;top:40vh;left:0;pointer-events:none}
+.v27-scroll-cue{display:none}
+.v27-narrative{background:#000208;color:#eef2fa;padding:70px 0}
+.v27-chapter{padding:40px 0;border-top:1px solid #263448;max-width:820px}
+.v27-chapter-label{font-size:13px!important;color:#93a6bf;margin:0 0 26px!important;letter-spacing:-.02em}
+.v27-chapter h2{font-size:clamp(34px,3.4vw,56px);font-weight:400;line-height:1.24;letter-spacing:-.052em;margin:0 0 30px}
+.v27-chapter-body>p{font-size:17px;line-height:1.9;letter-spacing:-.02em;word-break:keep-all;color:#aab8cc;margin:0;max-width:440px}
+.v27-chapter-body>span{display:block;font-size:12px;line-height:1.7;color:#7188a8;margin-top:28px}
+.v27-journey-tools{display:flex;align-items:center;justify-content:space-between;gap:35px}
+.v27-progress{display:none}
+.v27-journey-next{color:#c5d2e5;font-size:14px;padding:16px 0;display:inline-flex;align-items:center;gap:32px;border-bottom:1px solid #52647b;text-decoration:none}
+.v27-journey-next span{transition:transform .3s}.v27-journey-next:hover span{transform:translateY(4px)}
+.v27-journey.is-enhanced{height:calc(310svh - var(--journey-top));--intro-alpha:1;--story-alpha:0;--journey-progress:0}
+.is-enhanced .v27-sticky{position:sticky;top:var(--journey-top);height:calc(100svh - var(--journey-top));overflow:hidden}
+.is-enhanced .v26-frame{height:calc(100svh - var(--journey-top));min-height:0;max-height:none}
+.is-enhanced .v26-heading,.is-enhanced .v26-intro,.is-enhanced .v26-console{opacity:var(--intro-alpha);transition:none;animation:none}
+.is-enhanced .v26-heading{transform:translateY(calc((1 - var(--intro-alpha))*-16px))}
+.is-enhanced .v26-stage{animation:none}
+.is-enhanced .v26-stage:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,#000208,transparent 12%,transparent 94%,#000208)}
+.is-enhanced .v27-narrative{position:absolute;inset:0;padding:0;background:transparent;opacity:var(--story-alpha);pointer-events:none}
+.is-enhanced[data-chapter="-1"] .v27-narrative{visibility:hidden}
+.is-enhanced[data-chapter="-1"] .v27-journey-tools{pointer-events:none}
+.is-enhanced:not([data-chapter="-1"]) .v26-intro,.is-enhanced:not([data-chapter="-1"]) .v26-console,.is-enhanced:not([data-chapter="-1"]) .v27-scroll-cue{pointer-events:none;visibility:hidden}
+.is-enhanced .v27-chapters{position:relative;height:100%;width:91%;max-width:1590px}
+.is-enhanced .v27-chapter{border:0;padding:0;position:absolute;top:24%;left:0;width:38%;max-width:none;opacity:0;visibility:hidden;transform:translateY(14px);transition:opacity .38s ease,transform .55s cubic-bezier(.22,1,.36,1),visibility .38s}
+.is-enhanced .v27-chapter.is-current{opacity:1;visibility:visible;transform:none}
+.is-enhanced .v27-chapter h2{font-size:clamp(34px,3.35vw,56px)}
+.is-enhanced .v27-journey-tools{position:absolute;bottom:42px;left:4.5%;right:4.5%;width:91%;max-width:1590px;padding:0;margin:auto;pointer-events:auto}
+.is-enhanced .v27-progress{display:flex;width:55%;gap:24px}
+.v27-progress button{position:relative;appearance:none;flex:1;background:none;border:0;border-bottom:1px solid #2b3b51;color:#7286a2;font:inherit;font-size:13px;text-align:left;min-height:55px;padding:8px 0 18px;display:flex;gap:10px;cursor:pointer}
+.v27-progress button[aria-pressed=true]{color:#e5f0ff}
+.v27-step-index{font-size:10px;line-height:20px;color:#7d92b2}
+.v27-progress i{position:absolute;left:0;bottom:-1px;height:1px;background:#c4dcff;width:100%;transform-origin:left;transform:scaleX(var(--step-progress,0));transition:background .3s}
+.v27-progress button:hover{color:#fff}
+.v27-progress button:focus-visible,.v27-scroll-cue:focus-visible,.v27-journey-next:focus-visible{outline:2px solid #9bbff2;outline-offset:7px}
+.is-enhanced .v27-scroll-cue{position:absolute;display:flex;right:4.5%;top:22px;gap:18px;font-size:11px;line-height:20px;color:#8396b1;text-decoration:none;opacity:var(--intro-alpha);z-index:3;padding:6px 0}
+.is-enhanced .v27-scroll-cue span:last-child{font-size:16px;color:#bad5f9}
+.v27-journey[data-journey=accelerate].is-enhanced .v27-chapter{left:0;top:48px;width:100%;display:grid;grid-template-columns:57% 32%;justify-content:space-between;gap:0}
+.v27-journey[data-journey=accelerate] .v27-chapter-label{grid-column:1/-1}
+.v27-journey[data-journey=accelerate] .v27-chapter-body>p{font-size:16px}
+.v27-journey[data-journey=accelerate] .v27-chapter-body>span{margin-top:20px}
+.v27-journey[data-journey=connect].is-enhanced .v27-chapter{left:auto;right:0;width:40%;top:18%}
+.v27-journey[data-journey=connect] .v27-chapter h2{font-size:clamp(32px,3.05vw,52px)}
+@media(min-width:851px){.is-enhanced .v26-connect .v26-stage{transform:translateX(calc(var(--journey-progress)*-100px));mask-image:linear-gradient(90deg,#000 0,#000 88%,transparent 100%)}}
+/* Continuous scene on mobile, with the narrative in the same readable upper zone. */
+@media(max-width:1199px){.is-enhanced .v27-chapter{width:40%;top:20%}.is-enhanced .v27-chapter h2{font-size:36px}.v27-chapter-body>p{font-size:15px}.v27-journey[data-journey=connect].is-enhanced .v27-chapter{width:40%}.v27-journey[data-journey=connect] .v27-chapter h2{font-size:34px}.v27-journey[data-journey=accelerate].is-enhanced .v27-chapter{grid-template-columns:53% 39%}}
+@media(max-width:850px){
+ .v27-journey.is-enhanced{height:calc(300svh - var(--journey-top))}
+ .is-enhanced .v26-frame{padding-top:28px;padding-bottom:25px}
+ .is-enhanced .v26-stage{flex:1;min-height:180px!important;height:auto!important;margin-top:2px!important}
+ .is-enhanced .v26-heading,.is-enhanced .v26-console{flex:0 0 auto}
+ .is-enhanced .v26-intro>p,.is-enhanced .v26-actions{opacity:var(--intro-alpha);transition:none;flex:0 0 auto}
+ .is-enhanced .v26-intro>p:first-child{font-size:14px;margin-top:18px!important}
+ .is-enhanced .v26-actions{margin-top:12px!important}
+ .is-enhanced .v26-product-note{margin-top:10px!important}
+ .is-enhanced .v27-chapter,.v27-journey[data-journey=accelerate].is-enhanced .v27-chapter,.v27-journey[data-journey=connect].is-enhanced .v27-chapter{width:100%;left:0;right:0;top:28px;display:block}
+ .v27-chapter-label{font-size:12px!important;margin-bottom:17px!important}
+ .is-enhanced .v27-chapter h2,.v27-journey[data-journey=connect] .v27-chapter h2{font-size:34px;line-height:1.22;margin-bottom:18px}
+ .v27-chapter-body>p,.v27-journey[data-journey=accelerate] .v27-chapter-body>p{font-size:14px;line-height:1.8;max-width:600px}
+ .v27-chapter-body>span,.v27-journey[data-journey=accelerate] .v27-chapter-body>span{font-size:11px;margin-top:14px}
+ .is-enhanced .v27-journey-tools{bottom:28px;display:block}
+ .is-enhanced .v27-progress{width:100%;gap:18px}
+ .v27-progress button{font-size:12px;gap:7px;min-height:45px;padding-bottom:14px}
+ .v27-journey-next{font-size:12px;margin-top:13px;padding:8px 0;gap:20px}
+ .is-enhanced .v27-scroll-cue{top:auto;bottom:6px;right:4.5%;font-size:9px;gap:8px;line-height:15px;padding:0}
+ .is-enhanced .v27-scroll-cue span:last-child{font-size:12px}
+ .is-enhanced .v26-stage{transform:translateY(calc(var(--story-alpha)*var(--scene-shift,40px))) scale(calc(1 + var(--story-alpha)*.13));transform-origin:50% 0;transition:none}
+}
+@media(max-width:560px){
+ .v27-site{--journey-top:78px}
+ .is-enhanced .v26-frame,.is-enhanced .v27-chapters{width:calc(100% - 44px)}
+ .is-enhanced .v26-hero h1{font-size:32px}
+ .is-enhanced .v26-product-name{margin-bottom:14px!important}
+ .is-enhanced .v26-intro>p:first-child{font-size:13px;line-height:1.75;margin-top:14px!important}
+ .is-enhanced .v27-journey-tools{left:22px;right:22px;width:calc(100% - 44px)}
+ .is-enhanced .v27-chapter h2,.v27-journey[data-journey=connect] .v27-chapter h2{font-size:30px}
+ .is-enhanced .v27-chapter-body>p{font-size:13px;line-height:1.8}
+ .v27-progress button{font-size:11px}.v27-step-index{font-size:9px}
+ .v27-narrative{padding:25px 0 60px}.v27-chapter{padding:30px 0}
+}
+@media(prefers-reduced-motion:reduce){.v27-journey *{transition:none!important;animation:none!important}}
