@@ -14,6 +14,8 @@ const scrollPositions = new Map();
 const video = document.querySelector('#hero-video');
 const motionButton = document.querySelector('#video-toggle');
 const replayButton = document.querySelector('#intro-replay');
+const recoveryButton = document.querySelector('#intro-start');
+const englishHero = document.documentElement.lang === 'en';
 const idleVideo = document.querySelector('#hero-idle-video');
 const heroStage = document.querySelector('#hero-stage');
 const heroPoster = document.querySelector('.hero-fallback');
@@ -51,6 +53,12 @@ let destination = '';
 let userPaused = false;
 let videoReady = false;
 let mediaUnavailable = false;
+let manualMotion = false;
+let playbackIssue = '';
+let pendingPlay = null;
+let playbackWatch;
+let recoveryAttempts = 0;
+const motionSuppressed = () => reduceMotion.matches && !manualMotion;
 let changeTimer;
 let finishTimer;
 let transitionVersion = 0;
@@ -89,7 +97,7 @@ function prepareHeroTypography() {
   enter(heroCopy.querySelector('.hero-rule'), HERO_MEDIA.copyRevealAt, 560, '4px');
 }
 function updateHeroCopy() {
-  const settled = introCompleted || completedPosterVisible || reduceMotion.matches;
+  const settled = introCompleted || completedPosterVisible || motionSuppressed();
   const time = settled ? 8 : (pendingIntroTime || video.currentTime || 0);
   const ready = settled || time >= HERO_MEDIA.copyRevealAt;
   document.body.classList.toggle('hero-copy-ready', ready);
@@ -129,9 +137,9 @@ function activeHeroVideo() {
 }
 
 function updateHotspot() {
-  objectHotspot.hidden = !(hotspotRevealed || completedPosterVisible || reduceMotion.matches);
+  objectHotspot.hidden = !(hotspotRevealed || completedPosterVisible || motionSuppressed());
   updateHeroCopy();
-  heroStage.classList.toggle('is-complete', introCompleted || completedPosterVisible || reduceMotion.matches);
+  heroStage.classList.toggle('is-complete', introCompleted || completedPosterVisible || motionSuppressed());
   if (!mediaVariant) return;
   const config = HERO_MEDIA[mediaVariant];
   const bounds = heroStage.getBoundingClientRect();
@@ -166,39 +174,125 @@ function showCompletedPoster() {
 }
 
 function updateVideoControl() {
-  replayButton.hidden = !introCompleted || reduceMotion.matches;
+  replayButton.hidden = !introCompleted;
+  replayButton.textContent = englishHero ? 'Replay intro' : '처음부터 보기';
   const active = activeHeroVideo();
   const unavailable = introCompleted ? idleUnavailable : mediaUnavailable;
-  const ready = introCompleted ? idleReady : videoReady;
-  motionButton.hidden = unavailable || !ready || reduceMotion.matches;
+  const needsStart = !!playbackIssue || motionSuppressed();
+  recoveryButton.hidden = !needsStart;
+  recoveryButton.querySelector('span').textContent = englishHero
+    ? (unavailable ? 'Retry intro' : 'Play intro')
+    : (unavailable ? '인트로 다시 재생' : '인트로 재생');
+  motionButton.hidden = needsStart || unavailable || active.readyState < 2;
   const paused = active.paused;
-  motionButton.setAttribute('aria-label', paused ? '브랜드 영상 재생' : '브랜드 영상 일시정지');
-  motionButton.querySelector('span').textContent = paused ? '재생' : '일시정지';
+  motionButton.setAttribute('aria-label', englishHero
+    ? (paused ? 'Play brand film' : 'Pause brand film')
+    : (paused ? '브랜드 영상 재생' : '브랜드 영상 일시정지'));
+  motionButton.querySelector('span').textContent = englishHero
+    ? (paused ? 'Play' : 'Pause') : (paused ? '재생' : '일시정지');
   motionButton.querySelector('use').setAttribute('href', paused ? '#play' : '#pause');
+  heroStage.dataset.playback = needsStart ? 'needs-play' : userPaused ? 'paused'
+    : introCompleted ? 'idle' : active.paused ? 'loading' : 'playing';
+}
+
+function revealPlaybackRecovery(reason) {
+  playbackIssue = reason;
+  // A blocked intro is still at the beginning; do not pretend it finished.
+  if (introCompleted) showCompletedPoster();
+  updateVideoControl();
+}
+
+function canRunHero() {
+  return currentRoute === 'home' && !motionSuppressed() && !userPaused &&
+    !document.hidden && !document.body.classList.contains('is-route-moving');
+}
+
+function watchPlayback(active, version) {
+  clearTimeout(playbackWatch);
+  const at = active.currentTime;
+  playbackWatch = setTimeout(() => {
+    if (!canRunHero() || version !== mediaVersion || active !== activeHeroVideo()) return;
+    if (!active.ended && (active.paused || active.currentTime === at)) {
+      // Safari may suspend an initial request while decoding or revealing the
+      // element without rejecting play(). Retry once after the ready event.
+      if (!playbackIssue && active.readyState >= 2 && recoveryAttempts++ < 1) {
+        pendingPlay = null;
+        active.pause();
+        syncVideo();
+      } else revealPlaybackRecovery('interrupted');
+    }
+  }, 1800);
 }
 
 function syncVideo() {
   const active = activeHeroVideo();
   const unavailable = introCompleted ? idleUnavailable : mediaUnavailable;
-  if (currentRoute !== 'home' || reduceMotion.matches || userPaused || document.hidden || unavailable) {
+  if (!canRunHero() || unavailable) {
+    clearTimeout(playbackWatch);
     video.pause();
     idleVideo.pause();
-    if (reduceMotion.matches || unavailable) showCompletedPoster();
+    if (motionSuppressed() || unavailable) showCompletedPoster();
+    if (unavailable) playbackIssue = 'error';
     updateVideoControl();
     return;
   }
   (introCompleted ? video : idleVideo).pause();
   active.muted = true;
-  const requestedVersion = mediaVersion;
-  const playback = active.play();
-  if (playback && typeof playback.catch === 'function') playback.catch(error => {
-    // Source changes can abort a pending play. Only the current source/phase
-    // may change the visible fallback after an autoplay rejection.
-    if (active !== activeHeroVideo() || requestedVersion !== mediaVersion || currentRoute !== 'home' || error.name === 'AbortError') return;
-    showCompletedPoster();
+  active.defaultMuted = true;
+  active.playsInline = true;
+  // Keep the initial muted video paintable before asking WebKit to play.
+  // The idle clip remains covered until its first decoded frame arrives.
+  if (!introCompleted && !completedPosterVisible) active.classList.add('is-video-visible');
+  if (pendingPlay?.media === active || (!active.paused && active.readyState >= 2)) {
     updateVideoControl();
+    return;
+  }
+  const request = { media: active, version: mediaVersion };
+  pendingPlay = request;
+  const playback = active.play();
+  watchPlayback(active, request.version);
+  Promise.resolve(playback).catch(error => {
+    if (request.version !== mediaVersion || active !== activeHeroVideo() || !canRunHero()) return;
+    if (error.name !== 'AbortError') revealPlaybackRecovery(error.name);
+  }).finally(() => {
+    if (pendingPlay === request) pendingPlay = null;
   });
   updateVideoControl();
+}
+
+function restartIntro() {
+  // Called synchronously by the user gesture, including in autoplay-blocked
+  // and reduced-motion environments. No awaited work before play().
+  const reload = mediaUnavailable || !!video.error || video.networkState === 3;
+  clearTimeout(playbackWatch);
+  mediaVersion += 1;
+  pendingPlay = null;
+  pendingIntroTime = 0;
+  manualMotion = true;
+  document.body.classList.add('hero-manual-motion');
+  video.pause();
+  idleVideo.pause();
+  introCompleted = false;
+  hotspotRevealed = false;
+  completedPosterVisible = false;
+  userPaused = false;
+  mediaUnavailable = false;
+  playbackIssue = '';
+  recoveryAttempts = 0;
+  idleVideo.classList.remove('is-video-visible');
+  if (idleUnavailable || idleVideo.error || idleVideo.networkState === 3) {
+    idleUnavailable = false;
+    idleReady = false;
+    idleVideo.src = HERO_MEDIA[mediaVariant].idle;
+    idleVideo.load();
+  }
+  if (reload) {
+    video.src = HERO_MEDIA[mediaVariant].intro;
+    video.load();
+  } else if (video.readyState >= 1) video.currentTime = 0;
+  updateHotspot();
+  syncVideo();
+  motionButton.focus({ preventScroll: true });
 }
 
 function useIdleVideo() {
@@ -221,6 +315,9 @@ function configureHeroMedia() {
   mediaVersion += 1;
   mediaVariant = variant;
   const config = HERO_MEDIA[variant];
+  pendingPlay = null;
+  playbackIssue = '';
+  recoveryAttempts = 0;
   video.pause();
   idleVideo.pause();
   videoReady = false;
@@ -230,7 +327,7 @@ function configureHeroMedia() {
   video.classList.remove('is-video-visible');
   idleVideo.classList.remove('is-video-visible');
   // On the first animated visit the hotspot belongs to the final module reveal.
-  completedPosterVisible = introCompleted || reduceMotion.matches;
+  completedPosterVisible = introCompleted || motionSuppressed();
   if (!introCompleted) hotspotRevealed = pendingIntroTime >= HERO_MEDIA.revealAt;
   heroPoster.src = config.introPoster;
   heroCompletePoster.src = config.poster;
@@ -244,7 +341,7 @@ function configureHeroMedia() {
   video.load();
   idleVideo.load();
   updateHotspot();
-  syncVideo();
+  if (currentRoute) syncVideo();
 }
 
 function renderRoute(route, previous, { initial = false, fromHistory = false } = {}) {
@@ -382,9 +479,12 @@ video.addEventListener('loadeddata', () => {
   videoReady = true;
   mediaUnavailable = false;
   updateVideoControl();
+  if (!playbackIssue) syncVideo();
 });
 video.addEventListener('playing', () => {
-  if (introCompleted || reduceMotion.matches || currentRoute !== 'home') return;
+  if (introCompleted || motionSuppressed() || currentRoute !== 'home') return;
+  playbackIssue = '';
+  updateVideoControl();
   completedPosterVisible = false;
   video.classList.add('is-video-visible');
   hotspotRevealed = video.currentTime >= HERO_MEDIA.revealAt;
@@ -400,6 +500,7 @@ video.addEventListener('seeked', updateHotspot);
 video.addEventListener('ended', useIdleVideo);
 video.addEventListener('error', () => {
   mediaUnavailable = true;
+  playbackIssue = 'error';
   videoReady = false;
   if (!introCompleted) showCompletedPoster();
   updateVideoControl();
@@ -408,9 +509,12 @@ idleVideo.addEventListener('loadeddata', () => {
   idleReady = true;
   idleUnavailable = false;
   updateVideoControl();
+  if (introCompleted && !playbackIssue) syncVideo();
 });
 idleVideo.addEventListener('playing', () => {
-  if (!introCompleted || reduceMotion.matches || currentRoute !== 'home') return;
+  if (!introCompleted || motionSuppressed() || currentRoute !== 'home') return;
+  playbackIssue = '';
+  updateVideoControl();
   // Do not expose idle until playback has decoded a frame. Poster stays below.
   completedPosterVisible = false;
   idleVideo.classList.add('is-video-visible');
@@ -419,13 +523,20 @@ idleVideo.addEventListener('playing', () => {
 });
 idleVideo.addEventListener('error', () => {
   idleUnavailable = true;
+  if (introCompleted) playbackIssue = 'error';
   idleReady = false;
   if (introCompleted) showCompletedPoster();
   updateVideoControl();
 });
 for (const media of [video, idleVideo]) {
   media.addEventListener('play', updateVideoControl);
-  media.addEventListener('pause', updateVideoControl);
+  media.addEventListener('pause', () => {
+    updateVideoControl();
+    if (media === activeHeroVideo() && !media.ended && canRunHero()) watchPlayback(media, mediaVersion);
+  });
+  media.addEventListener('canplay', () => {
+    if (media === activeHeroVideo() && !playbackIssue) syncVideo();
+  });
 }
 motionButton.addEventListener('click', () => {
   const active = activeHeroVideo();
@@ -437,25 +548,12 @@ motionButton.addEventListener('click', () => {
     active.pause();
   }
 });
-replayButton.addEventListener('click', () => {
-  if (reduceMotion.matches) return;
-  pendingIntroTime = 0;
-  mediaVersion += 1;
-  video.pause();
-  idleVideo.pause();
-  introCompleted = false;
-  hotspotRevealed = false;
-  completedPosterVisible = false;
-  userPaused = false;
-  video.classList.remove('is-video-visible');
-  idleVideo.classList.remove('is-video-visible');
-  video.currentTime = 0;
-  document.querySelector('#explore-button').focus({ preventScroll: true });
-  updateHotspot();
-  syncVideo();
-});
+replayButton.addEventListener('click', restartIntro);
+recoveryButton.addEventListener('click', restartIntro);
 
 reduceMotion.addEventListener('change', () => {
+  manualMotion = false;
+  document.body.classList.remove('hero-manual-motion');
   if (reduceMotion.matches) {
     clearTimeout(changeTimer);
     clearTimeout(finishTimer);
@@ -480,6 +578,10 @@ wideScreen.addEventListener('change', configureHeroMedia);
 window.addEventListener('resize', updateHotspot);
 if ('ResizeObserver' in window) new ResizeObserver(updateHotspot).observe(heroStage);
 document.addEventListener('visibilitychange', syncVideo);
+window.addEventListener('pageshow', () => {
+  pendingPlay = null;
+  syncVideo();
+});
 
 try { history.scrollRestoration = 'manual'; } catch (_) { /* preview restriction */ }
 if (reduceMotion.matches) {

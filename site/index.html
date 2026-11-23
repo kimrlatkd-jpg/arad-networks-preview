@@ -10,8 +10,8 @@
   <link rel="preload" href="assets/fonts/Board-1.otf" as="font" type="font/otf" crossorigin>
   <link rel="preload" href="assets/fonts/Board-2.otf" as="font" type="font/otf" crossorigin>
   <link rel="stylesheet" href="styles.css?v=25">
-  <script src="app.js?v=29" defer></script>
-<meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="interior.css?v=25"><script src="site.js?v=25" defer></script><link rel="stylesheet" href="selector.css?v=29"><script src="selector-objects.js?v=29" defer></script><script src="selector-objects-controller.js?v=29" defer></script><link rel="stylesheet" href="transition.css?v=31"><script src="transition.js?v=31"></script></head>
+  <script src="app.js?v=32" defer></script>
+<meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="interior.css?v=25"><script src="site.js?v=25" defer></script><link rel="stylesheet" href="selector.css?v=29"><script src="selector-objects.js?v=29" defer></script><script src="selector-objects-controller.js?v=29" defer></script><link rel="stylesheet" href="transition.css?v=31"><script src="transition.js?v=31"></script><link rel="stylesheet" href="playback.css?v=32"></head>
 <body data-route="home">
   <a class="skip-link" href="#main-content">본문으로 건너뛰기</a>
   <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -44,7 +44,7 @@
         <div class="hero-media" aria-hidden="true">
           <img class="hero-fallback" src="assets/intro-poster-16x9.jpg?v=23" width="1920" height="1080" alt="">
           <img class="hero-complete-poster" src="assets/poster-16x9.jpg?v=23" width="1920" height="1080" alt="">
-          <video id="hero-video" poster="assets/intro-poster-16x9.jpg?v=23" muted autoplay playsinline preload="auto" tabindex="-1"></video>
+          <video id="hero-video" poster="assets/intro-poster-16x9.jpg?v=23" muted playsinline preload="auto" tabindex="-1"></video>
           <video id="hero-idle-video" poster="assets/poster-16x9.jpg?v=23" muted loop playsinline preload="metadata" tabindex="-1"></video>
           <div class="hero-shade"></div>
         </div>
@@ -65,6 +65,7 @@
         </div>
         <a id="explore-button" class="hero-skip" href="#business" data-route="business" aria-label="영상 건너뛰고 사업분야 탐색"><svg class="od-icon" aria-hidden="true"><use href="#arrow"/></svg><span class="sr-only">바로 탐색하기</span></a>
       </div>
+      <button id="intro-start" class="hero-playback-recovery" type="button" hidden><svg class="od-icon" aria-hidden="true"><use href="#play"/></svg><span>인트로 재생</span></button>
       <div class="hero-bottom wrap">
         <p><span class="tiny-line" aria-hidden="true"></span>주식회사 아라드 네트웍스</p>
         <div class="hero-media-controls"><button id="intro-replay" class="motion-control" type="button" aria-label="인트로 처음부터 보기" hidden>처음부터 보기</button><button id="video-toggle" class="motion-control" type="button" aria-label="브랜드 영상 일시정지" hidden><svg class="od-icon" aria-hidden="true"><use href="#pause"/></svg><span class="sr-only">일시정지</span></button></div>
