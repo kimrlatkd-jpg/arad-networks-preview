@@ -1,150 +1,116 @@
 'use strict';
 (() => {
-  const key='arad-business-arrival-v30';
-  const motion=matchMedia('(prefers-reduced-motion: reduce)');
-  const ease='cubic-bezier(.65,0,.35,1)';
-  let departure=null, arrivalAnimations=[];
-  const safeRemove=()=>{try{sessionStorage.removeItem(key)}catch{}};
-  const settled=a=>a.finished.catch(()=>{});
-  function cleanDeparture({restoreFocus=false}={}) {
-    const state=departure;if(!state)return;
-    departure=null;
-    clearTimeout(state.recovery);
-    state.animations.forEach(a=>a.cancel());state.plane.remove();
-    state.panel.classList.remove('arad-departure-selected');
-    document.body.classList.remove('arad-departing');
-    safeRemove();
-    if(restoreFocus)state.panel.focus({preventScroll:true});
-  }
-  function polygon(panel) {
-    const r=panel.getBoundingClientRect(),w=innerWidth,h=innerHeight;
-    const seam=parseFloat(getComputedStyle(panel).getPropertyValue('--seam'))*(innerWidth>760?w/100:1);
-    let p;
-    if(w>760){
-      const first=panel.classList.contains('region-isolate'),last=panel.classList.contains('region-connect');
-      p=[[r.left+(first?0:seam),0],[r.right,0],[r.right-(last?0:seam),h],[r.left,h]];
-    }else{
-      const first=panel.classList.contains('region-isolate'),last=panel.classList.contains('region-connect');
-      p=[[0,r.top+(first?0:seam)],[w,r.top],[w,r.bottom-(last?0:seam)],[0,r.bottom]];
+  const key = 'arad-business-continuity-v31';
+  const motion = matchMedia('(prefers-reduced-motion: reduce)');
+  const root = document.documentElement;
+  const named = [];
+  let selected = null, incoming = null;
+  const removeToken = () => { try { sessionStorage.removeItem(key); } catch {} };
+  function panelShape(panel) {
+    const rect = panel.getBoundingClientRect();
+    const first = panel.classList.contains('region-isolate');
+    const last = panel.classList.contains('region-connect');
+    if (innerWidth > 760) {
+      const seam = 100 * (innerWidth * .08) / rect.width;
+      return `polygon(${first?0:seam}% 0,100% 0,${last?100:100-seam}% 100%,0 100%)`;
     }
-    return p.map(([x,y])=>[100*x/w,100*y/h]);
+    const seam = 2200 / rect.height;
+    return `polygon(0 ${first?0:seam}%,100% 0,100% ${last?100:100-seam}%,0 100%)`;
   }
-  const clip=p=>'polygon('+p.map(([x,y])=>`${x}% ${y}%`).join(',')+')';
-  function depart(panel,url,event) {
-    if(departure){event.preventDefault();return;}
-    const business=panel.querySelector('[data-selector-object]')?.dataset.selectorObject;
-    if(motion.matches||!business)return;
-    try{sessionStorage.setItem(key,JSON.stringify({path:url.pathname,business,at:Date.now()}));}
-    catch{return;} // Native navigation if continuity cannot be carried over.
-    event.preventDefault();
-    const start=polygon(panel),end=[[0,0],[100,0],[100,100],[0,100]];
-    const middle=start.map((p,i)=>p.map((v,j)=>v+(end[i][j]-v)*.62));
-    const plane=document.createElement('div');plane.className='arad-departure-plane';plane.setAttribute('aria-hidden','true');
-    const color=getComputedStyle(panel).backgroundColor;
-    plane.style.background=color;plane.style.clipPath=clip(start);
-    panel.parentElement.append(plane);panel.classList.add('arad-departure-selected');
-    document.body.classList.add('arad-departing');
-    const animations=[];
-    const state=departure={panel,plane,animations,url:url.href};
-    animations.push(plane.animate([
-      {clipPath:clip(start),backgroundColor:color,offset:0},
-      {clipPath:clip(middle),backgroundColor:color,offset:.55},
-      {clipPath:clip(end),backgroundColor:'#000208',offset:1}
-    ],{duration:720,easing:ease,fill:'both'}));
-    // Keep the model's proportions. Only the underlying plane expands.
-    animations.push(panel.animate([{opacity:1},{opacity:0}],{duration:380,delay:170,easing:'cubic-bezier(.4,0,1,1)',fill:'both'}));
-    const object=panel.querySelector('.selector-object');
-    if(object)animations.push(object.animate([{transform:'translate3d(0,0,0) scale(1)'},{transform:'translate3d(20px,0,0) scale(1.055)'}],{duration:600,easing:ease,fill:'both'}));
-    for(const node of panel.parentElement.querySelectorAll('.business-region')){
-      if(node!==panel)animations.push(node.animate([{opacity:1},{opacity:.16}],{duration:400,easing:ease,fill:'both'}));
+  const name = (node, value) => {
+    if (!node) return;
+    named.push([node, node.style.viewTransitionName]);
+    node.style.viewTransitionName = value;
+  };
+  const clean = () => {
+    for (const [node, value] of named.splice(0)) node.style.viewTransitionName = value;
+    if (selected) selected.panel.style.clipPath = selected.clipPath || '';
+    root.classList.remove('arad-continuity');
+    selected = null;
+  };
+  // A one-use route token links two real documents; normal links/history remain intact.
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (raw) {
+      const state = JSON.parse(raw);
+      removeToken();
+      const nav = performance.getEntriesByType('navigation')[0];
+      if (state.path === location.pathname && Date.now() >= state.at && Date.now() - state.at < 15000 &&
+          ['isolate','accelerate','connect'].includes(state.business) && (!nav || nav.type === 'navigate')) incoming = state;
     }
-    for(const node of document.querySelectorAll('.site-header,.selector-intro'))animations.push(node.animate([{opacity:1},{opacity:0}],{duration:220,delay:70,easing:'ease-in',fill:'both'}));
-    Promise.all(animations.map(settled)).then(()=>{
-      if(departure!==state)return;
-      // The new document paints the same dark plane before its hero reveal.
-      location.assign(state.url);
-      state.recovery=setTimeout(()=>cleanDeparture({restoreFocus:true}),5000);
-    });
-  }
-  document.addEventListener('click',event=>{
-    const panel=event.target.closest?.('a.business-region');
-    if(!panel||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||panel.hasAttribute('download')||(panel.target&&panel.target!=='_self'))return;
-    const url=new URL(panel.href,location.href);
-    if(url.origin!==location.origin||!/(?:pages|en)\/(?:isolate|accelerate|connect)\.html$/.test(url.pathname))return;
-    depart(panel,url,event);
+  } catch { removeToken(); }
+
+  document.addEventListener('click', event => {
+    const panel = event.target.closest?.('a.business-region');
+    if (!panel || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ||
+        panel.hasAttribute('download') || (panel.target && panel.target !== '_self') || motion.matches) return;
+    const url = new URL(panel.href, location.href);
+    const business = panel.querySelector('[data-selector-object]')?.dataset.selectorObject;
+    if (url.origin !== location.origin || !['isolate','accelerate','connect'].includes(business)) return;
+    selected = {panel, path:url.pathname, business};
+    // Do not prevent default or fade the old document. It stays visible while loading.
   });
-  document.addEventListener('keydown',event=>{
-    if(event.key==='Escape'&&departure){event.preventDefault();event.stopImmediatePropagation();cleanDeparture({restoreFocus:true});}
-  },true);
-  document.addEventListener('click',event=>{
-    if(departure&&event.target.closest?.('a[data-route]'))cleanDeparture();
-  },true);
-  window.addEventListener('popstate',()=>cleanDeparture());
-  window.addEventListener('hashchange',()=>cleanDeparture());
-  window.addEventListener('pagehide',()=>{
-    // Keep the arrival token for the new document; clear visual state on restore.
-    if(departure)clearTimeout(departure.recovery);
+
+  addEventListener('pageswap', event => {
+    const vt = event.viewTransition;
+    if (!vt) return;
+    if (!selected || motion.matches) { vt.skipTransition(); return; }
+    try {
+      sessionStorage.setItem(key, JSON.stringify({path:selected.path, business:selected.business, shape:panelShape(selected.panel), at:Date.now()}));
+    } catch { vt.skipTransition(); return; }
+    root.classList.add('arad-continuity');
+    const panel = selected.panel;
+    // The pseudo-element owns the moving diagonal; avoid baking it into both snapshots.
+    selected.clipPath = panel.style.clipPath;
+    panel.style.clipPath = 'none';
+    name(panel, 'business-plane');
+    name(panel.querySelector('.selector-object'), 'business-object');
+    name(panel.querySelector('h2'), 'business-name');
+    name(panel.querySelector('.region-copy>p'), 'business-caption');
+    name(panel.querySelector('.region-cta'), 'business-prompt');
+    name(panel.querySelector('.region-top'), 'business-kicker');
+    name(document.querySelector('.wordmark'), 'business-logo');
+    vt.ready.catch(() => {}); // The outgoing transition is skipped when this document hides.
+    vt.finished.then(clean, clean);
   });
-  window.addEventListener('pageshow',event=>{if(event.persisted)cleanDeparture();});
-  // Warm only the intended destination and shared scene resources on intent.
-  const warmed=new Set();
-  function warm(event){
-    const panel=event.target.closest?.('a.business-region');if(!panel||navigator.connection?.saveData)return;
-    const base=new URL('.',location.href);
-    for(const href of [panel.href,new URL('scenes.js?v=27',base).href,new URL('v26.css?v=26',base).href,new URL('v27.css?v=27',base).href]){
-      if(warmed.has(href))continue;warmed.add(href);const link=document.createElement('link');link.rel='prefetch';link.href=href;document.head.append(link);
-    }
-  }
-  document.addEventListener('pointerover',warm,{passive:true});document.addEventListener('focusin',warm);
-  function finishArrival(){
-    arrivalAnimations.forEach(a=>a.cancel());arrivalAnimations=[];
-    clearTimeout(window.ARADArrival?.timer);
-    document.documentElement.classList.remove('arad-arrival','arad-arrival-playing');
-    document.documentElement.classList.add('arad-arrival-done');
-    document.querySelector('main')?.removeAttribute('inert');
-    if(window.ARADArrival)window.ARADArrival.finished=true;
-  }
-  function arrive(){
-    if(!window.ARADArrival||!document.documentElement.classList.contains('arad-arrival'))return;
-    if(motion.matches){finishArrival();return;}
-    const root=document.documentElement,main=document.querySelector('main');
-    if(main)main.inert=true;
-    const scene=document.querySelector('[data-scene]');
-    const started=performance.now();
-    function reveal(){
-      if(!root.classList.contains('arad-arrival')||window.ARADArrival.finished)return;
-      root.classList.add('arad-arrival-playing');
-      const parts=[['.v26-stage',0,850,48,.97],['.v26-heading',100,720,30,1],['.v26-intro',190,650,24,1],['.v26-console',290,580,16,1],['.a-header',100,550,0,1],['.v27-scroll-cue',290,580,12,1]];
-      for(const [selector,delay,duration,x,scale] of parts){
-        const container=document.querySelector(selector);if(!container)continue;
-        const nodes=getComputedStyle(container).display==='contents'?[...container.children]:[container];
-        for(const node of nodes){
-        const css=getComputedStyle(node),base=css.transform==='none'?'':css.transform;
-        arrivalAnimations.push(node.animate([
-          {opacity:0,transform:`${base} translate3d(${x}px,0,0) scale(${scale})`},
-          {opacity:css.opacity,transform:base||'none'}
-        ],{duration,delay,easing:'cubic-bezier(.22,1,.36,1)',fill:'both'}));
-        }
-      }
-      Promise.all(arrivalAnimations.map(settled)).then(finishArrival);
-    }
-    function ready(){
-      if(!root.classList.contains('arad-arrival'))return;
-      if(!scene||scene.dataset.objectReady==='true'||scene.hasAttribute('data-object-error')||performance.now()-started>1200){
-        requestAnimationFrame(()=>requestAnimationFrame(reveal));return;
-      }
-      requestAnimationFrame(ready);
-    }
-    ready();
-  }
-  motion.addEventListener('change',()=>{
-    if(!motion.matches)return;
-    if(departure){const url=departure.url;cleanDeparture();location.assign(url);}
-    if(window.ARADArrival&&!window.ARADArrival.finished)finishArrival();
+
+  // This listener is deliberately registered by a synchronous script in <head>.
+  addEventListener('pagereveal', event => {
+    const vt = event.viewTransition;
+    if (!vt) { incoming = null; return; }
+    if (!incoming || motion.matches || !document.querySelector('.v26-hero')) { vt.skipTransition(); return; }
+    root.classList.add('arad-continuity', 'arad-continuity-entry');
+    root.style.setProperty('--arad-plane-start', incoming.shape);
+    // Render an actual frame, even when the intersection observer has not ticked yet.
+    window.__aradScene?.render?.(2.8);
+    name(document.querySelector('.v26-hero'), 'business-plane');
+    name(document.querySelector('.v26-stage'), 'business-object');
+    name(document.querySelector('.v26-product-name'), 'business-name');
+    name(document.querySelector('.v26-intro>p:first-child'), 'business-description');
+    name(document.querySelector('.v26-actions'), 'business-actions');
+    name(document.querySelector('.v26-heading h1'), 'business-heading');
+    name(document.querySelector('.v26-console'), 'business-controls');
+    name(document.querySelector('.v26-product-note'), 'business-note');
+    name(document.querySelector('.a-logo'), 'business-logo');
+    vt.ready.then(() => { root.dataset.continuity = 'playing'; }, () => { root.dataset.continuity = 'skipped'; });
+    vt.finished.then(() => { clean(); root.dataset.continuity = 'complete'; }, clean);
+    incoming = null;
   });
-  // Let deliberate scrolling take over immediately; the scroll scene owns poses.
-  for(const type of ['wheel','touchstart'])addEventListener(type,()=>{
-    if(window.ARADArrival&&!window.ARADArrival.finished)finishArrival();
-  },{passive:true});
-  arrive();
+  addEventListener('pageshow', event => { if (event.persisted) clean(); });
+  // Fetch only a destination that the visitor actually points at or focuses.
+  const warmed = new Set();
+  function warm(event) {
+    const panel = event.target.closest?.('a.business-region');
+    if (!panel || navigator.connection?.saveData) return;
+    const base = new URL('.', location.href);
+    const business = panel.querySelector('[data-selector-object]')?.dataset.selectorObject;
+    for (const href of [panel.href, new URL('scenes.js?v=27', base).href,
+      new URL(`assets/editorial/object-${business}.jpg`, base).href]) {
+      if (warmed.has(href)) continue;
+      warmed.add(href);
+      const link = document.createElement('link');link.rel = 'prefetch';link.href = href;document.head.append(link);
+    }
+  }
+  document.addEventListener('pointerover', warm, {passive:true});
+  document.addEventListener('focusin', warm);
 })();

@@ -1,5 +1,64 @@
-/* A selected architectural plane opens into its business page. */
-.business-view .arad-departure-plane{position:absolute;inset:0;z-index:10;pointer-events:none;will-change:clip-path,background-color}
-.business-view .business-region.arad-departure-selected{z-index:11;pointer-events:none;filter:none}
-body.arad-departing .business-view .business-region{pointer-events:none}
-body.arad-departing .selector-close{pointer-events:none}
+/* Native snapshots preserve the selected plane until the next document is ready. */
+@view-transition { navigation: auto; }
+html.arad-continuity-entry .v26-product-name,
+html.arad-continuity-entry .v26-title-line>span,
+html.arad-continuity-entry .v26-intro,
+html.arad-continuity-entry .v26-stage,
+html.arad-continuity-entry .v26-console{animation:none}
+html.arad-continuity-entry .v26-object-poster{transition:none}
+html.arad-continuity .region-copy h2,
+html.arad-continuity-entry .v26-product-name{width:max-content;max-width:100%}
+html.arad-continuity::view-transition-group(*){animation-duration:980ms;animation-timing-function:cubic-bezier(.65,0,.35,1)}
+html.arad-continuity::view-transition-image-pair(*){isolation:isolate}
+html.arad-continuity::view-transition-old(*),
+html.arad-continuity::view-transition-new(*){mix-blend-mode:normal;animation-duration:980ms;animation-fill-mode:both}
+html.arad-continuity::view-transition-group(root){z-index:0}
+html.arad-continuity::view-transition-old(root){animation-name:arad-root-away;animation-timing-function:ease-in-out;z-index:2}
+html.arad-continuity::view-transition-new(root){animation:none;opacity:1;z-index:1}
+html.arad-continuity::view-transition-group(business-plane){z-index:1;animation-duration:820ms}
+html.arad-continuity::view-transition-image-pair(business-plane){animation:arad-plane-shape 820ms cubic-bezier(.65,0,.35,1) both}
+html.arad-continuity::view-transition-old(business-plane),
+html.arad-continuity::view-transition-new(business-plane){width:100%;height:100%;object-fit:fill}
+/* The new surface is underneath the retained, expanding old surface. */
+html.arad-continuity::view-transition-old(business-plane){animation-name:arad-plane-away;z-index:2}
+html.arad-continuity::view-transition-new(business-plane){animation:none;opacity:1;z-index:1}
+html.arad-continuity::view-transition-group(business-object){z-index:2}
+html.arad-continuity::view-transition-old(business-object),
+html.arad-continuity::view-transition-new(business-object){width:100%;height:100%;object-fit:contain}
+html.arad-continuity::view-transition-old(business-object){animation-name:arad-object-away;animation-timing-function:linear}
+html.arad-continuity::view-transition-new(business-object){animation-name:arad-object-in;animation-timing-function:linear}
+html.arad-continuity::view-transition-group(business-name),
+html.arad-continuity::view-transition-group(business-description),
+html.arad-continuity::view-transition-group(business-actions),
+html.arad-continuity::view-transition-group(business-heading),
+html.arad-continuity::view-transition-group(business-controls),
+html.arad-continuity::view-transition-group(business-note),
+html.arad-continuity::view-transition-group(business-caption),
+html.arad-continuity::view-transition-group(business-prompt),
+html.arad-continuity::view-transition-group(business-kicker){z-index:3}
+html.arad-continuity::view-transition-group(business-name){animation-duration:620ms}
+html.arad-continuity::view-transition-old(business-name){animation-name:arad-copy-away}
+html.arad-continuity::view-transition-new(business-name){animation-name:arad-copy-in}
+html.arad-continuity::view-transition-old(business-name),
+html.arad-continuity::view-transition-new(business-name){width:100%;height:100%;object-fit:contain;object-position:left top}
+html.arad-continuity::view-transition-old(business-caption),
+html.arad-continuity::view-transition-old(business-prompt),
+html.arad-continuity::view-transition-old(business-kicker){animation:arad-caption-away 240ms ease-in both}
+html.arad-continuity::view-transition-new(business-heading){animation:arad-heading-in 500ms 480ms cubic-bezier(.22,1,.36,1) both}
+html.arad-continuity::view-transition-new(business-description){animation:arad-heading-in 500ms 480ms cubic-bezier(.22,1,.36,1) both}
+html.arad-continuity::view-transition-new(business-actions){animation:arad-heading-in 440ms 540ms cubic-bezier(.22,1,.36,1) both}
+html.arad-continuity::view-transition-new(business-controls),
+html.arad-continuity::view-transition-new(business-note){animation:arad-heading-in 400ms 580ms cubic-bezier(.22,1,.36,1) both}
+html.arad-continuity::view-transition-group(business-logo){z-index:4}
+html.arad-continuity::view-transition-old(business-logo){animation-name:arad-object-away}
+html.arad-continuity::view-transition-new(business-logo){animation-name:arad-object-in}
+@keyframes arad-root-away{0%,25%{opacity:1}70%,100%{opacity:0}}
+@keyframes arad-plane-away{0%,23%{opacity:1}62%,100%{opacity:0}}
+@keyframes arad-object-away{0%,50%{opacity:1}78%,100%{opacity:0}}
+@keyframes arad-object-in{0%,50%{opacity:0}78%,100%{opacity:1}}
+@keyframes arad-copy-away{0%,25%{opacity:1}53%,100%{opacity:0}}
+@keyframes arad-copy-in{0%,50%{opacity:0}82%,100%{opacity:1}}
+@keyframes arad-plane-shape{from{clip-path:var(--arad-plane-start)}to{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}}
+@keyframes arad-caption-away{to{opacity:0;transform:translateY(-8px)}}
+@keyframes arad-heading-in{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){@view-transition{navigation:none}}
