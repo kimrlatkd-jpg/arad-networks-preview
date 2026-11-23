@@ -2,11 +2,12 @@
 
 [홈페이지 열기](https://kimrlatkd-jpg.github.io/arad-networks-preview/)
 
-아라드 네트웍스 홈페이지의 디자인과 인터랙션 검토용 사이트입니다. 현재 디자인: V29.
+아라드 네트웍스 홈페이지의 디자인과 인터랙션 검토용 사이트입니다. 현재 디자인: V30.
 
 - 화면 비율에 맞춰 좌우 여백 없이 채우는 빛과 서버랙 인트로
 - 단색 배경과 독립적인 3D 오브젝트로 구분한 세 사업 선택 화면
 - 오른쪽에서 하나씩 이어지는 세 패널의 부드러운 등장 모션
+- 선택한 패널이 넓어지고 내부 제목·3D로 이어지는 사업 진입 전환
 - Isolate AI · Accelerate AI · Connect AI의 개별 사업 페이지
 - 사업별 금속 구조와 빛, 설명에 이어지는 세 단계 스크롤 장면
 - 한글·영문, 모바일 화면, 모션 감소 설정과 3D 대체 이미지 지원
@@ -18,7 +19,7 @@
 
 ## 수정과 배포
 
-HTML, CSS, JavaScript는 `site/`에 있습니다. 편집 가능한 3D 소스와 기존 빌드 안내는 `site/assets/source/`에서 확인할 수 있습니다. V29 사업 선택 화면의 3D 소스는 `selector-scene-source.js`입니다.
+HTML, CSS, JavaScript는 `site/`에 있습니다. 편집 가능한 3D 소스와 기존 빌드 안내는 `site/assets/source/`에서 확인할 수 있습니다. 사업 선택 화면의 3D 소스는 `selector-scene-source.js`입니다. V30의 페이지 전환은 `transition.js`와 `transition.css`, 각 사업 페이지의 초기 도착 처리 코드에 있습니다.
 
 `main` 브랜치의 `site/**` 변경 사항은 Pages 워크플로로 배포됩니다. `source.zip`은 검토한 정적 소스이며, 영상은 기존 `media.zip`을 그대로 사용합니다. 일반 수정은 압축을 푼 소스 파일에서 진행하고, ZIP을 반영할 때는 수동 워크플로의 아카이브 가져오기 옵션을 사용합니다.
 
