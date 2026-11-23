@@ -1,9 +1,9 @@
-/* ARAD V34 selector product assemblies. Authored geometry, Three.js MIT. */
+/* ARAD V35 selector product assemblies. Authored geometry, Three.js MIT. */
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import {addController,addGateway,addPointGateway,addMonitor,addBrand} from './products.js';
+import {addController,addGateway,addPointGateway,addMonitor,addBrand,addAcceleratorChassis} from './products.js';
 const mounted=new WeakMap();
 const clamp=THREE.MathUtils.clamp,lerp=THREE.MathUtils.lerp;
 const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
@@ -15,8 +15,7 @@ function frame(g,w,h,d,t,pos,mat){const a=new THREE.Group();a.position.set(...po
  const shape=new THREE.Shape(),hole=new THREE.Path(),radius=Math.min(.13,t*.35);rounded(shape,w,h,radius);rounded(hole,w-t*2,h-t*2,Math.min(.095,t*.3));shape.holes.push(hole);
  const bevel=Math.min(.032,d*.20,t*.15),geometry=new THREE.ExtrudeGeometry(shape,{depth:d-bevel*2,bevelEnabled:true,bevelThickness:bevel,bevelSize:bevel,bevelSegments:3,curveSegments:8,steps:1});geometry.translate(0,0,-d/2+bevel);const mesh=new THREE.Mesh(geometry,mat);mesh.castShadow=true;mesh.receiveShadow=false;a.add(mesh);return a;}
 function merge(root){const parents=[];root.traverse(o=>{if(o.isGroup)parents.push(o);});for(const parent of parents){const groups=new Map();for(const o of [...parent.children]){if(!o.isMesh)continue;if(!groups.has(o.material))groups.set(o.material,[]);groups.get(o.material).push(o);}for(const [mat,meshes]of groups){if(meshes.length<2)continue;const geometries=meshes.map(o=>{o.updateMatrix();let g=o.geometry.clone().applyMatrix4(o.matrix);if(g.index){const flat=g.toNonIndexed();g.dispose();g=flat;}return g;});const geometry=mergeGeometries(geometries,false);geometries.forEach(g=>g.dispose());if(!geometry)continue;const combined=new THREE.Mesh(geometry,mat);combined.castShadow=true;combined.receiveShadow=false;for(const o of meshes){o.geometry.dispose();parent.remove(o);}parent.add(combined);}}}
-// The two racks deliberately share one cabinet family. Their fitted equipment is
-// the difference: protected gateway layers versus stacked compute controllers.
+// Isolate retains its tall cabinet; Accelerate is a distinct standalone blade chassis.
 function rack(m){
  const root=new THREE.Group();
  frame(root,4.3,7.25,2.65,.25,[0,0,0],m.silver);
@@ -47,10 +46,11 @@ function isolate(){const m=kit(),root=rack(m);
  box(root,[3.47,.53,.10],[0,-2.23,1.35],m.dark,.012);
  for(let i=0;i<25;i++)box(root,[.047,.28,.02],[-1.55+i*.129,-2.23,1.415],m.inset,.003);
  merge(root);return{root,direction:[7.5,3.7,17.5],rotation:[0,-.07,0],ground:-4.05,fill:1.10};}
-function accelerate(){const m=kit(),root=rack(m);
- // Controller x7, including two grille blocks and individually fitted drive bays.
- for(let i=0;i<7;i++)addController(root,m,{width:3.47,height:.67,depth:2.16,position:[0,2.45-i*.78,.24]});
- merge(root);return{root,direction:[7.5,3.7,17.5],rotation:[0,-.07,0],ground:-4.05,fill:1.10};}
+function accelerate(){const m=kit(),root=new THREE.Group();
+ // Wide independent modular chassis: vertical blade cards and one horizontal
+ // removed line card in front. The same authored assembly is used inside.
+ addAcceleratorChassis(root,m,{width:10.4,height:5.5,depth:3.0,includeDetached:true});
+ merge(root);return{root,direction:[7,3.7,19],rotation:[0,-.035,0],ground:-2.97,fill:1.20,shadowDimensions:[12.4,6.5]};}
 function connect(){const root=new THREE.Group(),m=kit();
  // An authored management display behind a real equipment-shaped foreground.
  // Its generic network diagram is a visual concept, not a product specification.
@@ -77,7 +77,7 @@ function mount(container,{type='isolate',reducedMotion=false,onReady}={}){
  const key=new THREE.DirectionalLight('#ffffff',1.1);key.position.set(-7,12,10);key.castShadow=false;key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-12,right:12,top:12,bottom:-12,near:.5,far:50});key.shadow.bias=-.0007;key.shadow.normalBias=.02;scene.add(key);
  const rim=new THREE.DirectionalLight('#b3ccff',.7);rim.position.set(8,4,-8);scene.add(rim);
  const shadowSize=128,shadowData=new Uint8Array(shadowSize*shadowSize*4);for(let y=0;y<shadowSize;y++)for(let x=0;x<shadowSize;x++){const r2=Math.pow((x-shadowSize/2)/(shadowSize*.46),2)+Math.pow((y-shadowSize/2)/(shadowSize*.46),2),v=Math.round(Math.pow(Math.max(0,1-r2),2.8)*255),i=(y*shadowSize+x)*4;shadowData[i]=shadowData[i+1]=shadowData[i+2]=v;shadowData[i+3]=255;}
- const shadowMap=new THREE.DataTexture(shadowData,shadowSize,shadowSize);shadowMap.needsUpdate=true;const shadowDimensions=type==='connect'?[7.5,5.7]:[6.2,4.5];const shadow=new THREE.Mesh(new THREE.PlaneGeometry(...shadowDimensions),new THREE.MeshBasicMaterial({color:'#020716',alphaMap:shadowMap,transparent:true,opacity:.27,depthWrite:false}));shadow.rotation.x=-Math.PI/2;shadow.position.y=model.ground-.05;scene.add(shadow);
+ const shadowMap=new THREE.DataTexture(shadowData,shadowSize,shadowSize);shadowMap.needsUpdate=true;const shadowDimensions=model.shadowDimensions||(type==='connect'?[7.5,5.7]:[6.2,4.5]);const shadow=new THREE.Mesh(new THREE.PlaneGeometry(...shadowDimensions),new THREE.MeshBasicMaterial({color:'#020716',alphaMap:shadowMap,transparent:true,opacity:.27,depthWrite:false}));shadow.rotation.x=-Math.PI/2;shadow.position.y=model.ground-.05;scene.add(shadow);
  let disposed=false,paused=false,raf=0,width=0,height=0,hoverValue=0,targetHover=0,fromHover=0,start=0,duration=700,visible=true,ready=false,renderAge=0;
  const baseDirection=new THREE.Vector3(...model.direction).normalize(),look=new THREE.Vector3(),basePos=new THREE.Vector3();
  function fit(){if(disposed)return;const r=container.getBoundingClientRect();if(r.width<2||r.height<2)return;width=r.width;height=r.height;renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();
@@ -96,8 +96,8 @@ function mount(container,{type='isolate',reducedMotion=false,onReady}={}){
  const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(visible){fit();if(!paused)draw(renderAge);}else{cancelAnimationFrame(raf);raf=0;}},{threshold:0});observer.observe(container);
  function contextlost(event){event.preventDefault();cancelAnimationFrame(raf);raf=0;container.dataset.objectError='webgl-context-lost';canvas.style.visibility='hidden';}
  canvas.addEventListener('webglcontextlost',contextlost);document.addEventListener('visibilitychange',visibility);
- const api={setPaused(value){paused=!!value;if(paused){cancelAnimationFrame(raf);raf=0;}else{hoverValue=targetHover;fit();draw(renderAge);}},hover(value){animateTo(value?1:0);},render(time){if(Number.isFinite(time))renderAge=Math.max(0,time);fit();draw(renderAge);},exportPng(){draw(renderAge);return canvas.toDataURL('image/png');},getState(){return{version:'34.0.0',type,ready,paused,visible,width,height,hover:hoverValue,canvasAlpha:true};},dispose(){if(disposed)return;disposed=true;cancelAnimationFrame(raf);resize.disconnect();observer.disconnect();document.removeEventListener('visibilitychange',visibility);canvas.removeEventListener('webglcontextlost',contextlost);const mats=new Set(),textures=new Set();scene.traverse(o=>{o.geometry?.dispose();if(o.material){for(const m of Array.isArray(o.material)?o.material:[o.material]){mats.add(m);for(const v of Object.values(m))if(v?.isTexture)textures.add(v);}}});for(const m of mats)m.dispose();for(const t of textures)t.dispose();env.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();mounted.delete(container);}};
+ const api={setPaused(value){paused=!!value;if(paused){cancelAnimationFrame(raf);raf=0;}else{hoverValue=targetHover;fit();draw(renderAge);}},hover(value){animateTo(value?1:0);},render(time){if(Number.isFinite(time))renderAge=Math.max(0,time);fit();draw(renderAge);},exportPng(){draw(renderAge);return canvas.toDataURL('image/png');},getState(){return{version:'35.0.0',type,ready,paused,visible,width,height,hover:hoverValue,canvasAlpha:true};},dispose(){if(disposed)return;disposed=true;cancelAnimationFrame(raf);resize.disconnect();observer.disconnect();document.removeEventListener('visibilitychange',visibility);canvas.removeEventListener('webglcontextlost',contextlost);const mats=new Set(),textures=new Set();scene.traverse(o=>{o.geometry?.dispose();if(o.material){for(const m of Array.isArray(o.material)?o.material:[o.material]){mats.add(m);for(const v of Object.values(m))if(v?.isTexture)textures.add(v);}}});for(const m of mats)m.dispose();for(const t of textures)t.dispose();env.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();mounted.delete(container);}};
  mounted.set(container,api);fit();return api;
 }
-if(typeof window!=='undefined')window.ARADSelectorObjects={mount,version:'34.0.0'};
+if(typeof window!=='undefined')window.ARADSelectorObjects={mount,version:'35.0.0'};
 export {isolate,accelerate,connect,mount};

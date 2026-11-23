@@ -121,3 +121,97 @@ export function addMonitor(parent,m,{width=4.5,height=2.9,depth=.18,position=[0,
  block(g,[w*.09,h*.26,depth*1.4],[0,-h*.58,-.10],kitMat(m,'dark'),.025);block(g,[w*.37,.06,w*.15],[0,-h*.72,.02],kitMat(m,'brushed'),.025);
  return g;
 }
+
+// V35: a standalone modular chassis, based on the supplied blade-equipment silhouette.
+// This is an authored concept form, not product CAD or a claim about ARAD hardware specifications.
+export function addAcceleratorChassis(parent,m,{width=10.4,height=5.5,depth=3.0,position=[0,0,0],includeDetached=true}={}){
+ const g=group(parent,position),w=width,h=height,d=depth,z=d/2;
+ g.userData.product='Accelerate modular chassis';
+ const metal=kitMat(m,'silver'),edge=kitMat(m,'edge'),brushed=kitMat(m,'brushed'),navy=kitMat(m,'navy'),dark=kitMat(m,'dark'),inset=kitMat(m,'inset'),etched=kitMat(m,'etched');
+ // Shallow broad shell with substantial side panels, rather than rack posts.
+ block(g,[w,h,d],[0,0,-.03],navy,.075);
+ block(g,[w-.16,.11,d-.1],[0,h/2+.015,-.03],brushed,.025);
+ block(g,[w-.28,h-.35,.08],[0,0,z+.016],inset,.018);
+ for(const x of[-w/2+.14,w/2-.14]){
+  block(g,[.28,h+.03,.29],[x,.015,z+.04],metal,.028);
+  block(g,[.045,h-.18,.035],[x-.07,.015,z+.203],edge,.007);
+ }
+ for(const y of[-h/2+.13,h/2-.12]){
+  block(g,[w-.30,.25,.34],[0,y,z+.045],metal,.022);
+  block(g,[w-.50,.025,.025],[0,y+(y>0?-.078:.078),z+.224],edge,.005);
+ }
+ // Brushed top cover, subtle repeated machining lines and a narrow rear ventilation band.
+ for(let i=0;i<34;i++)block(g,[.026,.012,d*.64],[-w*.44+i*w*.88/33,h/2+.078,-.15],etched);
+ for(let i=0;i<15;i++)block(g,[.025,h*.47,.024],[w/2+.018,-.06,-d*.37+i*d*.73/14],inset);
+ const bladeCount=8,bladeStart=-w*.414,step=w*.096,bw=w*.084,bh=h*.842,blades=[];
+ for(let i=0;i<bladeCount;i++){
+  const b=group(g,[bladeStart+i*step,-.035,0]);b.userData.product='Vertical compute module';b.userData.slot=i;
+  // Separate cartridge bodies remain visible when the last scroll chapter withdraws a module.
+  block(b,[bw,bh,d*.86],[0,0,-.03],dark,.025);
+  block(b,[bw*.92,bh*.99,.11],[0,0,z+.07],metal,.014);
+  block(b,[bw*.79,bh*.94,.035],[0,0,z+.136],brushed,.009);
+  for(const side of[-1,1])block(b,[bw*.045,bh*.96,.042],[side*bw*.455,0,z+.145],edge,.004);
+  // Three finely recessed port/vent fields read as one tall blade, not stacked servers.
+  for(let band=0;band<3;band++){
+   const yy=bh*.303-band*bh*.302;
+   block(b,[bw*.65,bh*.228,.018],[0,yy,z+.160],inset,.008);
+   for(let row=0;row<10;row++)for(let col=0;col<4;col++){
+    block(b,[bw*.105,bh*.009,.012],[-bw*.213+col*bw*.142,yy-bh*.094+row*bh*.0205,z+.174],etched);
+   }
+   // Discrete front sockets along one edge give each module a precise hardware scale.
+   for(let port=0;port<3;port++){
+    block(b,[bw*.19,bh*.039,.027],[bw*.04,yy-bh*.025+port*bh*.054,z+.185],metal,.003);
+    block(b,[bw*.135,bh*.025,.015],[bw*.04,yy-bh*.025+port*bh*.054,z+.205],inset,.002);
+   }
+  }
+  // Solid top and bottom ejector handles with inset grips.
+  for(const side of[-1,1]){
+   const yy=side*bh*.445;
+   block(b,[bw*.58,.08,.17],[0,yy,z+.215],dark,.012);
+   block(b,[bw*.56,.035,.055],[0,yy+side*.026,z+.307],edge,.006);
+   block(b,[bw*.11,.085,.065],[-bw*.38,yy,z+.20],navy,.006);
+  }
+  block(b,[bw*.045,bh*.70,.018],[-bw*.365,0,z+.178],navy,.003);
+  block(b,[bw*.24,.026,.022],[bw*.19,bh*.398,z+.199],navy,.003);
+  for(let j=0;j<5;j++)block(b,[d*.09,.035,bw*.86],[0,bh*.50+.022,-d*.30+j*d*.135],brushed,.004).rotation.y=Math.PI/2;
+  blades.push(b);
+ }
+ const rightX=w*.416,rightW=w*.123;
+ block(g,[rightW,h*.85,.13],[rightX,-.035,z+.07],brushed,.018);
+ // Two larger power / cooling cartridges in the right-hand service column.
+ for(let k=0;k<2;k++){
+  const yy=h*.217-k*h*.444;
+  block(g,[rightW*.81,h*.398,.045],[rightX,yy,z+.153],dark,.013);
+  for(let row=0;row<21;row++)for(let col=0;col<5;col++)block(g,[rightW*.103,.025,.014],[rightX-rightW*.267+col*rightW*.1335,yy-h*.164+row*h*.0164,z+.183],etched);
+  block(g,[rightW*.53,.065,.12],[rightX,yy-h*.15,z+.228],metal,.009);
+  for(const x of[-1,1])block(g,[.042,h*.05,.10],[rightX+x*rightW*.25,yy-h*.13,z+.222],edge,.006);
+ }
+ // ARAD is engraved on the machine's own header from the first frame.
+ block(g,[w*.18,.25,.032],[w*.315,h/2-.12,z+.226],navy,.006);
+ addBrand(g,m,{width:w*.085,position:[w*.315,h/2-.12,z+.248]});
+ // Low integral feet and a fine machined bottom edge, no rack plinth.
+ for(const x of[-w*.37,w*.37])for(const zz of[-d*.31,d*.31])block(g,[w*.10,.17,d*.15],[x,-h/2-.085,zz],dark,.025);
+ block(g,[w-.20,.075,.25],[0,-h/2-.015,z+.08],navy,.012);
+ let detached=null,detachedHome=null;
+ if(includeDetached){
+  detached=group(g,[w*.16,-h/2-.045,z+1.32]);detached.rotation.y=-.075;detached.userData.product='Removed line card';
+  const cw=w*.66,ch=.33,cd=1.12;
+  block(detached,[cw,ch,cd],[0,0,0],metal,.022);
+  block(detached,[cw*.97,ch*.85,.08],[0,0,cd/2+.02],dark,.008);
+  block(detached,[cw*.96,.035,cd*.82],[0,ch/2+.013,-.015],brushed,.008);
+  for(let p=0;p<24;p++){
+   const xx=-cw*.455+p*cw*.91/23;
+   block(detached,[cw*.031,ch*.66,.035],[xx,0,cd/2+.07],brushed,.003);
+   block(detached,[cw*.024,ch*.49,.02],[xx,0,cd/2+.092],inset,.002);
+   block(detached,[cw*.016,.015,.016],[xx,-ch*.21,cd/2+.105],edge,.002);
+  }
+  for(const side of[-1,1]){
+   block(detached,[.17,ch*1.18,.28],[side*(cw/2+.05),0,cd/2],brushed,.014);
+   block(detached,[.09,ch*.73,.10],[side*(cw/2+.12),0,cd/2+.17],edge,.008);
+  }
+  for(let i=0;i<18;i++)block(detached,[cw*.026,.07,cd*.57],[-cw*.42+i*cw*.84/17,ch/2+.053,-.07],dark,.003);
+  const logo=addBrand(detached,m,{width:.50,position:[cw*.34,ch/2+.055,-.12]});if(logo)logo.rotation.x=-Math.PI/2;
+  detachedHome=detached.position.clone();
+ }
+ return{group:g,blades,detached,detachedHome,width:w,height:h,depth:d,bladeCenters:blades.map(b=>b.position.x)};
+}

@@ -1,4 +1,4 @@
-# ARAD V34 제품 기반 3D 소스 (34.0.0)
+# ARAD V35 제품 기반 3D 소스 (35.0.0)
 
 V32의 홈페이지 구성과 선택 화면 전환을 유지하면서, 사용자가 제공한 ARAD 제품 사진을 참고해 장비 형상을 반영한 버전이다. 네이비·실버 재질, 아라드 블루 광섬유, 기존의 깊이감과 스크롤 연동 방식은 이어간다. 인트로 영상은 완전한 블랙에서 빛이 시작되도록 별도 갱신되었으며, 이 폴더는 선택 화면과 내부 페이지의 실시간 3D 소스를 담는다.
 
@@ -19,12 +19,12 @@ V32의 홈페이지 구성과 선택 화면 전환을 유지하면서, 사용자
 
 선택 화면:
 - Isolate: Service Gateway 6대와 Controller 2대를 장착한 세로 랙.
-- Accelerate: Controller 7대를 적층한 동일 계열의 세로 랙.
+- Accelerate: 랙 없이 가로로 넓은 독립형 섀시에 세로 블레이드 8개와 우측 서비스 열을 배치하고, 앞쪽에 분리된 라인 카드를 둔다.
 - Connect: 뒤쪽 관리 화면과 앞쪽 Service Gateway 2대·Point Gateway 2대.
 
 내부 페이지:
 - Isolate: 세 캐비닛에 각각 Service Gateway 6대와 Controller 2대를 배치한다. 세 경로를 구분하는 총 324개의 광섬유가 장비 측면을 따라 흐른다.
-- Accelerate: 하나의 세로 랙에 Controller 9대를 세 그룹으로 배치한다. 총 288개의 광섬유로 선택한 경로를 구분한다.
+- Accelerate: 독립형 가로 섀시의 세로 블레이드와 전면 분리 카드를 표현한다. 288개의 광섬유가 블레이드별 경로와 병렬 흐름을 보여주며, 스크롤 후반에 하나의 블레이드가 미세하게 빠졌다 복귀한다. 장비의 전면 금속을 읽을 수 있도록 이 장면에만 소프트박스 반사를 추가했다.
 - Connect: 관리 화면 뒤·앞의 깊이를 가진 구성에 Service Gateway 2대와 Point Gateway 2대를 배치한다. 총 156개의 광섬유가 관리 화면, 네트워크 장비, 단말 쪽 연결을 잇는다.
 
 선택 화면은 작은 영역에서 사업을 식별하기 위한 축약 표현이고, 내부 페이지는 세 단계의 설명을 위한 구성이다. 장비 수량·치수·배치는 시각적 구성값이며 실제 납품 사양이 아니다. 관리 화면은 Concept view로 표시한 개념 UI로, 실제 제품 UI나 측정 성능을 주장하지 않는다.
@@ -80,10 +80,10 @@ npx esbuild selector-scene-source.js --bundle --format=iife --target=es2020 --mi
 
 프로젝트 작업본에서는 다음 빌드 스크립트가 기존 설치 의존성을 재사용하고, 모든 모델의 좌표가 유한한 값인지 함께 검사한다.
 
-node work/v34-objects/interior/build.mjs
-node work/v34-objects/selector/build.mjs
+node work/v35-objects/interior/build.mjs
+node work/v35-objects/selector/build.mjs
 
-작업본의 공유 파일은 work/v34-objects/products.js와 logo-paths.js이다. 배포용 편집 소스는 이 README와 같은 폴더의 상대 경로로 import한다. 선택 화면의 별도 selector-poster.js는 정지 이미지 출력 전용이며 웹사이트에는 배포하지 않는다.
+작업본의 공유 파일은 work/v35-objects/products.js와 logo-paths.js이다. 배포용 편집 소스는 이 README와 같은 폴더의 상대 경로로 import한다. 선택 화면의 별도 selector-poster.js는 정지 이미지 출력 전용이며 웹사이트에는 배포하지 않는다.
 
 제품 형상 수정 후 두 번들 및 관련 정지 이미지를 갱신하고, 실제 3D 렌더와 모바일·데스크톱 화면에서 크기, 가림, 전환을 확인한다.
 
