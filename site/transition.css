@@ -1,0 +1,5 @@
+/* A selected architectural plane opens into its business page. */
+.business-view .arad-departure-plane{position:absolute;inset:0;z-index:10;pointer-events:none;will-change:clip-path,background-color}
+.business-view .business-region.arad-departure-selected{z-index:11;pointer-events:none;filter:none}
+body.arad-departing .business-view .business-region{pointer-events:none}
+body.arad-departing .selector-close{pointer-events:none}
