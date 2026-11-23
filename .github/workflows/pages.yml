@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       import_archives:
-        description: "Replace site/ from the reviewed source.zip and media.zip (initial import or intentional update)"
+        description: "Import reviewed source.zip, media.zip and blog-content.zip (intentional replacement)"
         required: true
         default: false
         type: boolean
@@ -12,6 +12,8 @@ on:
     branches: [main]
     paths:
       - "site/**"
+      - "content/insights/**"
+      - "scripts/build_insights.py"
 
 permissions: {}
 
@@ -39,7 +41,7 @@ jobs:
           ref: main
           persist-credentials: true
 
-      - name: Import both reviewed archives
+      - name: Import reviewed public site and media archives
         if: github.event_name == 'workflow_dispatch' && inputs.import_archives
         shell: bash
         run: |
@@ -53,7 +55,7 @@ jobs:
               'assets/idle-16x9-web.mp4', 'assets/idle-21x9-web.mp4',
           }
           allowed = {'.html', '.css', '.js', '.jpg', '.jpeg', '.png', '.webp',
-                     '.svg', '.otf', '.ttf', '.woff', '.woff2', '.pdf', '.txt', '.mp4'}
+                     '.svg', '.otf', '.ttf', '.woff', '.woff2', '.pdf', '.txt', '.mp4', '.xml'}
           folders = {'assets', 'en', 'pages', 'insights', 'licenses'}
           seen = set()
           total = 0
@@ -108,6 +110,76 @@ jobs:
           print(f'Imported {len(seen)} static files; {total} uncompressed bytes')
           PY
 
+      - name: Import reviewed blog source archive
+        if: github.event_name == 'workflow_dispatch' && inputs.import_archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path, PurePosixPath
+          import hashlib, json, re, shutil, stat, tempfile, zipfile
+
+          archive = Path('blog-content.zip')
+          if not archive.is_file() or archive.stat().st_size >= 2 * 1024**2:
+              raise SystemExit('blog-content.zip: missing or not below 2 MiB')
+          script_name = 'scripts/build_insights.py'
+          reviewed_script_sha256 = 'aac6034cddf64c528c373cfeb02aa8aa27b1b540faa582234df5456d3bf97b02'
+          seen, json_names, total = set(), set(), 0
+          with tempfile.TemporaryDirectory(prefix='arad-blog-import-', dir='.') as tmp:
+              stage = Path(tmp)
+              with zipfile.ZipFile(archive) as z:
+                  for info in z.infolist():
+                      name, rel = info.filename, PurePosixPath(info.filename)
+                      if (not name or '\\' in name or rel.is_absolute()
+                          or name.rstrip('/') != rel.as_posix()
+                          or any(p in ('', '.', '..') or p.startswith('.') for p in rel.parts)):
+                          raise SystemExit(f'Unsafe blog archive path: {name}')
+                      kind = stat.S_IFMT(info.external_attr >> 16)
+                      if kind not in (0, stat.S_IFREG, stat.S_IFDIR):
+                          raise SystemExit(f'Non-regular blog archive entry: {name}')
+                      if info.is_dir():
+                          if name.rstrip('/') not in ('content', 'content/insights', 'scripts'):
+                              raise SystemExit(f'Unexpected blog archive folder: {name}')
+                          continue
+                      is_post = re.fullmatch(r'content/insights/[a-z0-9]+(?:-[a-z0-9]+)*\.json', name)
+                      if name in seen or (name != script_name and not is_post):
+                          raise SystemExit(f'Unexpected or duplicate blog source: {name}')
+                      total += info.file_size
+                      if len(seen) >= 101 or info.file_size > 1024**2 or total > 5 * 1024**2:
+                          raise SystemExit('Blog archive exceeds reviewed source limits')
+                      data = z.read(info)
+                      if name == script_name:
+                          if hashlib.sha256(data).hexdigest() != reviewed_script_sha256:
+                              raise SystemExit('Blog generator does not match the reviewed V33 script')
+                      else:
+                          value = json.loads(data.decode('utf-8'))
+                          if not isinstance(value, dict) or value.get('slug') != rel.stem:
+                              raise SystemExit(f'Post filename and slug differ: {name}')
+                          json_names.add(name)
+                      target = stage.joinpath(*rel.parts)
+                      target.parent.mkdir(parents=True, exist_ok=True)
+                      target.write_bytes(data)
+                      seen.add(name)
+              if script_name not in seen or not json_names:
+                  raise SystemExit('Blog archive needs the reviewed generator and at least one post')
+              for target in (Path('content'), Path('content/insights'), Path('scripts'), Path(script_name)):
+                  if target.is_symlink():
+                      raise SystemExit(f'Blog destination must not be a symlink: {target}')
+              Path('content').mkdir(exist_ok=True)
+              Path('scripts').mkdir(exist_ok=True)
+              if Path('content/insights').exists():
+                  shutil.rmtree('content/insights')
+              shutil.move(str(stage / 'content/insights'), 'content/insights')
+              shutil.copy2(stage / script_name, script_name)
+          print(f'Imported {len(json_names)} reviewed blog sources and the reviewed generator')
+          PY
+
+      - name: Generate the full-text blog from current article sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/build_insights.py --root .
+
       - name: Validate the actual site before committing or deploying
         shell: bash
         run: |
@@ -125,7 +197,7 @@ jobs:
                               ('isolate', 'accelerate', 'connect', 'insights', 'resources', 'company', 'contact'))
           media = {'assets/intro-16x9-web.mp4', 'assets/intro-21x9-web.mp4',
                    'assets/idle-16x9-web.mp4', 'assets/idle-21x9-web.mp4'}
-          required |= media
+          required |= media | {'insights/feed.xml', 'insights/feed-en.xml'}
           errors = []
           for name in sorted(required):
               file = root / name
@@ -133,10 +205,10 @@ jobs:
                   errors.append(f'Missing/empty required file: {name}')
           files = list(root.rglob('*')) if root.is_dir() else []
           html_files = [p for p in files if p.suffix == '.html']
-          if len(html_files) < 22:
-              errors.append('Expected at least 22 Korean/English HTML pages')
+          if len(html_files) < 16:
+              errors.append('Expected all 16 core Korean/English HTML pages; blog article count may vary')
           allowed = {'.html', '.css', '.js', '.jpg', '.jpeg', '.png', '.webp',
-                     '.svg', '.otf', '.ttf', '.woff', '.woff2', '.pdf', '.txt', '.mp4'}
+                     '.svg', '.otf', '.ttf', '.woff', '.woff2', '.pdf', '.txt', '.mp4', '.xml'}
           for p in files:
               if p.is_symlink():
                   errors.append(f'Symlink rejected: {p.relative_to(root)}')
@@ -144,7 +216,7 @@ jobs:
                   rel = p.relative_to(root)
                   if any(part.startswith('.') for part in rel.parts) or p.suffix.lower() not in allowed:
                       errors.append(f'Unexpected public file: {rel}')
-                  if p.suffix in ('.html', '.css', '.js', '.svg', '.txt'):
+                  if p.suffix in ('.html', '.css', '.js', '.svg', '.txt', '.xml'):
                       text = p.read_text(encoding='utf-8')
                       if re.search(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|github_pat_[A-Za-z0-9_]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|/Users/|file://|https?://(?:localhost|127\.0\.0\.1)', text):
                           errors.append(f'Credential/local-only reference marker: {rel}')
@@ -185,18 +257,17 @@ jobs:
           print(f'Validated {len(html_files)} HTML pages, four MP4 files, and static local references')
           PY
 
-      - name: Commit imported static files if changed
-        if: github.event_name == 'workflow_dispatch' && inputs.import_archives
+      - name: Commit reviewed sources and generated site if changed
         shell: bash
         run: |
           set -euo pipefail
-          git add --all -- site
-          if git diff --cached --quiet -- site; then
-            echo "site/ already matches the imported archives; no commit required."
+          git add --all -- site content/insights scripts/build_insights.py
+          if git diff --cached --quiet -- site content/insights scripts/build_insights.py; then
+            echo "Reviewed sources and generated site are unchanged; no commit required."
           else
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "Import reviewed ARAD static preview"
+            git commit -m "Build reviewed ARAD site and insights"
             git push origin HEAD:main
           fi
 
