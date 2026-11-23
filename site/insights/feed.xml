@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss version="2.0">
+  <channel>
+    <title>ARAD Networks Insights</title>
+    <link>https://kimrlatkd-jpg.github.io/arad-networks-preview/pages/insights.html</link>
+    <description>네트워크의 구조부터 AI 인프라와 현장의 운영까지. 아라드의 기술과 경험을 글로 전합니다.</description>
+    <language>ko</language>
+    <item>
+      <title>네트워크 분리는 어디에서 시작할까요?</title>
+      <link>https://kimrlatkd-jpg.github.io/arad-networks-preview/insights/device-boundaries.html</link>
+      <guid>https://kimrlatkd-jpg.github.io/arad-networks-preview/insights/device-boundaries.html</guid>
+      <description>기기 목록보다 먼저 살펴야 할 것은 기기 사이의 통신 관계입니다.</description>
+    </item>
+    <item>
+      <title>GPU와 네트워크를 함께 봐야 하는 이유</title>
+      <link>https://kimrlatkd-jpg.github.io/arad-networks-preview/insights/workload-network.html</link>
+      <guid>https://kimrlatkd-jpg.github.io/arad-networks-preview/insights/workload-network.html</guid>
+      <description>AI 작업의 성능을 이해하려면 연산 사이의 데이터 이동도 살펴야 합니다.</description>
+    </item>
+    <item>
+      <title>현장 통신, 기술보다 먼저 확인할 세 가지</title>
+      <link>https://kimrlatkd-jpg.github.io/arad-networks-preview/insights/site-connectivity.html</link>
+      <guid>https://kimrlatkd-jpg.github.io/arad-networks-preview/insights/site-connectivity.html</guid>
+      <description>공간과 기존 기반, 운영 요구가 현장에 맞는 연결 방식을 결정합니다.</description>
+    </item>
+  </channel>
+</rss>

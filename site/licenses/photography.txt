@@ -1,0 +1,30 @@
+ARAD Networks preview — photography credits
+
+Photographs are illustrative environment images, not representations of ARAD installations or endorsements.
+All photographs: Pexels License — https://www.pexels.com/license/
+Free commercial website use and modification permitted. Attribution is optional; credit is provided here.
+Optimized copies: maximum dimension 2000 px, JPEG quality 86. No generative editing.
+
+rack-front.jpg — Brett Sayles
+Source: https://www.pexels.com/photo/server-racks-on-data-center-5480781/
+Original: https://images.pexels.com/photos/5480781/pexels-photo-5480781.jpeg?cs=srgb&dl=pexels-brett-sayles-5480781.jpg&fm=jpg
+
+rack-aisle.jpg — Sergei Starostin
+Source: https://www.pexels.com/photo/network-servers-on-an-enclosure-6466141/
+Original: https://images.pexels.com/photos/6466141/pexels-photo-6466141.jpeg?cs=srgb&dl=pexels-sejio402-6466141.jpg&fm=jpg
+
+network-ports.jpg — Brett Sayles
+Source: https://www.pexels.com/photo/close-up-of-network-cables-with-server-ports-1597776/
+Original: https://images.pexels.com/photos/1597776/pexels-photo-1597776.jpeg?cs=srgb&dl=pexels-brett-sayles-1597776.jpg&fm=jpg
+
+cctv-facade.jpg — Jan van der Wolf
+Source: https://www.pexels.com/photo/the-facade-of-a-building-with-a-security-camera-12571569/
+Original: https://images.pexels.com/photos/12571569/pexels-photo-12571569.jpeg?cs=srgb&dl=pexels-jan-van-der-wolf-11680885-12571569.jpg&fm=jpg
+
+home-thermostat.jpg — Erik Mclean
+Source: https://www.pexels.com/photo/white-thermostat-hanging-on-the-wall-7616651/
+Original: https://images.pexels.com/photos/7616651/pexels-photo-7616651.jpeg?cs=srgb&dl=pexels-introspectivedsgn-7616651.jpg&fm=jpg
+
+rack-blue.jpg — panumas nikhomkhai
+Source: https://www.pexels.com/photo/computer-server-in-data-center-room-17489156/
+Original: https://images.pexels.com/photos/17489156/pexels-photo-17489156.jpeg?cs=srgb&dl=pexels-cookiecutter-17489156.jpg&fm=jpg

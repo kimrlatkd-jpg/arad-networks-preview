@@ -1,0 +1,58 @@
+/* ARAD journal — an open editorial page, with real photography and readable text. */
+.b-journal .s-hero{padding-bottom:66px}
+.b-journal .s-h1{max-width:1100px;font-size:clamp(44px,5.4vw,86px);line-height:1.16;letter-spacing:-.052em;text-wrap:balance}
+.b-journal .s-hero-intro{justify-content:flex-start;margin-top:30px}
+.b-journal .s-lead{max-width:680px;font-size:19px;line-height:1.8;color:#aebbd1}
+.b-journal-tools{display:flex;justify-content:space-between;gap:28px;align-items:center;margin-bottom:48px;border-bottom:1px solid rgba(195,204,217,.22)}
+.b-journal-tools .s-filters{margin:0;border:0;gap:28px}
+.b-feed-link{color:#aebbd1;font-size:13px;min-height:44px;display:flex;align-items:center;white-space:nowrap;text-underline-offset:6px}
+.b-feed-link:hover{color:#fff;text-decoration:underline}
+.b-journal .s-journal-grid{gap:66px 44px}
+.b-journal .s-story-featured .s-story-link{grid-template-columns:1.2fr 1fr;gap:7%;align-items:center}
+.b-journal .s-story-featured .s-story-image{aspect-ratio:1.4}
+.b-journal .s-story-image img{object-position:center;filter:saturate(.6)}
+.b-journal .s-story-image{background:#0b1320}
+.b-journal .s-story-featured .s-story-title{font-size:clamp(30px,3vw,47px);line-height:1.28;max-width:580px}
+.b-journal .s-story-title{max-width:620px}
+.b-journal .s-story-copy .s-body{max-width:530px;color:#aebbd1;line-height:1.7}
+.b-journal .s-story .s-kicker{margin-bottom:20px!important}
+.b-article-meta{display:flex;flex-wrap:wrap;gap:24px;margin-top:24px;font-size:13px;color:#aebbd1}
+.b-journal-footer{display:flex;align-items:center;justify-content:space-between;margin-top:88px;padding-top:28px;border-top:1px solid rgba(195,204,217,.2);font-size:13px;color:#8c9cb5}
+.b-journal-footer a,.b-reading-end a{min-height:44px;display:inline-flex;align-items:center;text-underline-offset:6px}
+.b-journal-footer a:hover,.b-reading-end a:hover{text-decoration:underline;color:#fff}
+.b-article .a-article-header{padding-bottom:52px}
+.b-article .a-article-header h1{max-width:1000px;text-wrap:balance}
+.b-article-image{position:relative;margin:0;overflow:visible;height:auto!important;aspect-ratio:auto!important}
+.b-article-image img{display:block;width:100%;height:clamp(300px,44vw,660px)!important;object-fit:cover;object-position:center;filter:saturate(.6)}
+.b-article-image figcaption{font-size:12px;line-height:1.6;color:#8d9db7;padding:14px clamp(24px,5.5vw,96px) 0;text-align:right}
+.b-article .a-article-body{max-width:840px}
+.b-article .a-article-body p{font-size:19px;line-height:1.95;word-break:keep-all}
+.b-article .a-article-body section{margin-bottom:58px}
+.b-reading-end{border-top:1px solid rgba(195,204,217,.22);margin-top:64px;padding-top:22px;display:flex;justify-content:space-between;gap:24px;font-size:14px;color:#aebbd1}
+@media(max-width:850px){
+ .b-journal .s-hero{padding-bottom:38px}
+ .b-journal-tools{align-items:flex-end;gap:14px;margin-bottom:32px}
+ .b-journal-tools .s-filters{gap:10px 18px}
+ .b-feed-link{font-size:12px}
+ .b-journal .s-journal-grid{gap:44px 26px}
+ .b-journal .s-story-featured .s-story-link{grid-template-columns:1fr;gap:24px}
+ .b-journal .s-story-featured .s-story-image{aspect-ratio:1.7}
+ .b-journal .s-story-featured .s-story-copy{padding-top:0}
+ .b-journal .s-story-featured .s-story-title{font-size:36px}
+}
+@media(max-width:560px){
+ .b-journal .s-h1{font-size:43px;line-height:1.22}
+ .b-journal .s-lead{font-size:16px}
+ .b-journal-tools{display:block}
+ .b-journal-tools .s-filters{flex-wrap:nowrap;gap:18px;overflow-x:auto}
+ .b-journal-tools .s-filters button{white-space:nowrap;font-size:13px}
+ .b-feed-link{display:none}
+ .b-journal .s-journal-grid{grid-template-columns:1fr;gap:44px}
+ .b-journal .s-story-title,.b-journal .s-story-featured .s-story-title{font-size:29px}
+ .b-journal .s-story-featured .s-story-image{aspect-ratio:1.4}
+ .b-journal .s-story .s-body{font-size:16px;margin-top:18px}
+ .b-article .a-article-body p{font-size:17px;line-height:1.9}
+ .b-article-image figcaption{text-align:left}
+ .b-reading-end{margin-top:44px}
+}
+@media(prefers-reduced-motion:reduce){.b-journal .s-story-image img{transition:none}}

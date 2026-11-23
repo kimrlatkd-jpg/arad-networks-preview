@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss version="2.0">
+  <channel>
+    <title>ARAD Networks Insights</title>
+    <link>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/insights.html</link>
+    <description>Explore the structures behind networks, AI infrastructure and connectivity in the field.</description>
+    <language>en</language>
+    <item>
+      <title>Where does network separation begin?</title>
+      <link>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/device-boundaries.html</link>
+      <guid>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/device-boundaries.html</guid>
+      <description>Start by understanding how devices communicate, not just what devices exist.</description>
+    </item>
+    <item>
+      <title>Why look at GPUs and networks together?</title>
+      <link>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/workload-network.html</link>
+      <guid>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/workload-network.html</guid>
+      <description>Data movement between computation steps is part of understanding AI workload performance.</description>
+    </item>
+    <item>
+      <title>Three things to assess before choosing site connectivity</title>
+      <link>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/site-connectivity.html</link>
+      <guid>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/site-connectivity.html</guid>
+      <description>Space, existing infrastructure and operating needs guide the choice of connectivity.</description>
+    </item>
+  </channel>
+</rss>
