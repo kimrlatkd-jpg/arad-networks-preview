@@ -12,6 +12,8 @@ on:
     branches: [main]
     paths:
       - "site/**"
+      - "content/insights/**"
+      - "scripts/build_insights.py"
 
 permissions: {}
 
@@ -53,7 +55,7 @@ jobs:
               'assets/idle-16x9-web.mp4', 'assets/idle-21x9-web.mp4',
           }
           allowed = {'.html', '.css', '.js', '.jpg', '.jpeg', '.png', '.webp',
-                     '.svg', '.otf', '.ttf', '.woff', '.woff2', '.pdf', '.txt', '.mp4'}
+                     '.svg', '.otf', '.ttf', '.woff', '.woff2', '.pdf', '.txt', '.mp4', '.xml'}
           folders = {'assets', 'en', 'pages', 'insights', 'licenses'}
           seen = set()
           total = 0
@@ -108,6 +110,14 @@ jobs:
           print(f'Imported {len(seen)} static files; {total} uncompressed bytes')
           PY
 
+      - name: Build editorial content
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f scripts/build_insights.py ]; then
+            python3 scripts/build_insights.py --site site --content content/insights
+          fi
+
       - name: Validate the actual site before committing or deploying
         shell: bash
         run: |
@@ -136,7 +146,7 @@ jobs:
           if len(html_files) < 22:
               errors.append('Expected at least 22 Korean/English HTML pages')
           allowed = {'.html', '.css', '.js', '.jpg', '.jpeg', '.png', '.webp',
-                     '.svg', '.otf', '.ttf', '.woff', '.woff2', '.pdf', '.txt', '.mp4'}
+                     '.svg', '.otf', '.ttf', '.woff', '.woff2', '.pdf', '.txt', '.mp4', '.xml'}
           for p in files:
               if p.is_symlink():
                   errors.append(f'Symlink rejected: {p.relative_to(root)}')
@@ -144,7 +154,7 @@ jobs:
                   rel = p.relative_to(root)
                   if any(part.startswith('.') for part in rel.parts) or p.suffix.lower() not in allowed:
                       errors.append(f'Unexpected public file: {rel}')
-                  if p.suffix in ('.html', '.css', '.js', '.svg', '.txt'):
+                  if p.suffix in ('.html', '.css', '.js', '.svg', '.txt', '.xml'):
                       text = p.read_text(encoding='utf-8')
                       if re.search(r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|github_pat_[A-Za-z0-9_]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|/Users/|file://|https?://(?:localhost|127\.0\.0\.1)', text):
                           errors.append(f'Credential/local-only reference marker: {rel}')
@@ -185,8 +195,7 @@ jobs:
           print(f'Validated {len(html_files)} HTML pages, four MP4 files, and static local references')
           PY
 
-      - name: Commit imported static files if changed
-        if: github.event_name == 'workflow_dispatch' && inputs.import_archives
+      - name: Commit reviewed or generated static files if changed
         shell: bash
         run: |
           set -euo pipefail
@@ -196,7 +205,7 @@ jobs:
           else
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "Import reviewed ARAD static preview"
+            git commit -m "Update reviewed ARAD site and editorial content"
             git push origin HEAD:main
           fi
 
