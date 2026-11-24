@@ -1,12 +1,12 @@
-# ARAD Networks · 홈페이지 미리보기 V38
+# ARAD Networks · 홈페이지 미리보기 V39
 
-[인트로부터 보기](https://kimrlatkd-jpg.github.io/arad-networks-preview/?v=38#home)
+[인트로부터 보기](https://kimrlatkd-jpg.github.io/arad-networks-preview/?v=39#home)
 
-Accelerate 개념도의 영어 문구를 각 홀로그램 사각 면 안에 배치한 검토용 홈페이지입니다.
+홀로그램의 면 내부 타이포그래피와 장비 이미지를 개선한 검토용 홈페이지입니다.
 
-- 영어 문구를 홀로그램 사각 면 안에 배치하고 면의 기울기·움직임과 함께 표시
-- 별도 라벨 박스와 연결선을 제거하고 청색 발광·투명한 층 유지
-- 고밀도 화면 렌더링과 2배 해상도 대체 이미지 적용
+- 영어 문구는 각 홀로그램 사각 면 내부에 유지하며 면적·글자 크기·대비를 조정
+- 면 뒤쪽의 광확산과 가장자리 발광, 층 사이 공간을 강화
+- 장비 원본과 대체 이미지를 함께 갱신하고 고밀도 화면 렌더링 유지
 - 기존 블랙 오프닝, 16:9·21:9 인트로 영상과 카메라·빛 모션 유지
 - Isolate: Service Gateway와 Controller가 들어간 세로 랙
 - Accelerate: 독립형 서버 앞쪽, 청색 홀로그램 기술 개념도 뒤쪽
@@ -20,6 +20,6 @@ Accelerate 개념도의 영어 문구를 각 홀로그램 사각 면 안에 배�
 정적 HTTP 서버로 `site/`를 실행할 수 있습니다. 편집 소스와 빌드 안내는 `site/assets/source/`에 있습니다. API 키나 별도 백엔드는 필요하지 않습니다.
 
 ## 배포
-`site/**` 변경은 Pages 워크플로로 배포됩니다. V38에서는 source.zip만 갱신하고 승인된 영상 4개가 든 V34 media.zip을 그대로 사용합니다. ZIP 업데이트 시 수동 워크플로의 `import_archives`를 선택합니다.
+`site/**` 변경은 Pages 워크플로로 배포됩니다. V39에서는 source.zip만 갱신하고 승인된 영상 4개가 든 V34 media.zip을 그대로 사용합니다. ZIP 업데이트 시 수동 워크플로의 `import_archives`를 선택합니다.
 
 외부 라이브러리와 글꼴 고지는 `site/licenses/`와 `site/assets/fonts/OFL.txt`에 있습니다. 브랜드 자산의 권리는 각 권리자에게 있습니다.
