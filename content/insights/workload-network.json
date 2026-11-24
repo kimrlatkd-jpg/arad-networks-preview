@@ -3,7 +3,7 @@
   "category": "accelerate",
   "order": 1,
   "published": true,
-  "image": "assets/photography/rack-aisle.jpg",
+  "image": "assets/photography/rack-blue.jpg",
   "translations": {
     "ko": {
       "title": "GPU와 네트워크를 함께 봐야 하는 이유",
@@ -67,5 +67,13 @@
         }
       ]
     }
+  },
+  "editorial_team": {
+    "ko": "아라드 네트웍스",
+    "en": "ARAD Networks"
+  },
+  "image_credit": {
+    "ko": "적용 환경을 설명하는 사진이며, 아라드 구축 현장 사진은 아닙니다.",
+    "en": "An illustrative environment photograph, not an ARAD installation."
   }
 }
