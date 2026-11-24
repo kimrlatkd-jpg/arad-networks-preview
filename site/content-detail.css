@@ -1,0 +1,27 @@
+/* V40 editorial detail: workload evaluation and company navigation. */
+.rv40-nav{overflow-x:auto;overflow-y:hidden;scrollbar-width:none}.rv40-nav::-webkit-scrollbar{display:none}
+.rv40-nav>a{white-space:nowrap;flex:0 0 auto}
+.rv40-evaluation{margin-top:72px;padding-top:48px;border-top:1px solid #bcc8d5}
+.rv40-evaluation>h3{font-size:clamp(24px,2.6vw,38px);line-height:1.35;font-weight:400;letter-spacing:-.04em;margin:0 0 20px}
+.rv40-evaluation>p{font-size:16px;line-height:1.9;max-width:54em;color:#40556b}
+.rv40-table-wrap{margin-top:32px}
+.rv40-table{width:100%;border-collapse:collapse;table-layout:fixed;text-align:left;font-size:15px;line-height:1.8;color:#21354c}
+.rv40-table caption{text-align:left;font-size:12px;color:#526c85;margin-bottom:14px}
+.rv40-table th,.rv40-table td{padding:24px 24px 24px 0;vertical-align:top;border-bottom:1px solid #c5cfda;word-break:keep-all;overflow-wrap:anywhere}
+.rv40-table th{font-weight:500}.rv40-table thead th{font-size:12px;color:#506980;border-top:1px solid #9bacc0;padding-block:16px}
+.rv40-table th:first-child{width:20%}
+.rv40-status-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:52px}
+.rv40-status-grid>div{border-left:2px solid #2e5b93;padding-left:23px}
+.rv40-status-grid span{display:block;color:#506680;font-size:12px;margin-bottom:14px}
+.rv40-status-grid strong{font-size:clamp(19px,2vw,26px);line-height:1.6;font-weight:400;letter-spacing:-.025em}
+.s-company .rv40-nav{position:static;margin-block:0;padding-block:28px;border-bottom:1px solid #26364b;gap:30px}
+.s-company section[id]{scroll-margin-top:100px}
+.s-company .s-h1{max-width:18em;font-size:clamp(38px,4.6vw,78px);word-break:keep-all;line-height:1.22}
+.s-company .s-year{font-size:clamp(32px,3.4vw,54px)}
+@media(max-width:680px){
+ .rv40-nav{gap:22px!important}.rv40-nav>span{display:none}
+ .rv40-evaluation{margin-top:48px;padding-top:32px}.rv40-evaluation>p{font-size:15px}
+ .rv40-table{font-size:12px;line-height:1.75}.rv40-table th,.rv40-table td{padding:18px 12px 18px 0;word-break:normal}.rv40-table th:first-child{width:21%}
+ .rv40-table thead th{font-size:11px}.rv40-status-grid{grid-template-columns:1fr;gap:28px;margin-top:36px}
+ .s-company .rv40-nav{gap:24px}.s-company .s-h1{font-size:38px}.s-company .s-year{font-size:36px}
+}

@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0">
+  <channel>
+    <title>ARAD Networks Insights</title>
+    <link>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/insights.html</link>
+    <description>From network architecture to AI infrastructure and connectivity in the field. Questions that help us design and operate connections.</description>
+    <language>en</language>
+    <atom:link href="https://kimrlatkd-jpg.github.io/arad-networks-preview/insights/feed-en.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Where does network separation begin?</title>
+      <link>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/device-boundaries.html</link>
+      <guid>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/device-boundaries.html</guid>
+      <description>Start by understanding how devices communicate, not just what devices exist.</description>
+      <category>Isolate AI</category>
+      <content:encoded>&lt;section id="section-1"&gt;&lt;h2&gt;From inventory to relationships&lt;/h2&gt;&lt;p&gt;A name and an IP address do not describe a device’s communication needs. Its services, ownership and remote access requirements are the starting points for defining boundaries.&lt;/p&gt;&lt;/section&gt;&lt;section id="section-2"&gt;&lt;h2&gt;Shared infrastructure, different purposes&lt;/h2&gt;&lt;p&gt;A camera communicating with a monitoring server has different requirements from an employee workstation. Separation is about defining required communication, rather than removing every connection.&lt;/p&gt;&lt;/section&gt;&lt;section id="section-3"&gt;&lt;h2&gt;Tunnels and routing spaces&lt;/h2&gt;&lt;p&gt;ARAD’s SPN combines per-device tunnels with separate routing spaces. It defines individual paths and permitted destinations through policy. This does not automatically replace encryption or other security controls.&lt;/p&gt;&lt;/section&gt;&lt;section id="section-4"&gt;&lt;h2&gt;What to establish first&lt;/h2&gt;&lt;p&gt;Prepare communication maps, equipment details, change constraints and rollout requirements. Include ongoing management and maintenance in the evaluation.&lt;/p&gt;&lt;/section&gt;</content:encoded>
+    </item>
+    <item>
+      <title>Why look at GPUs and networks together?</title>
+      <link>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/workload-network.html</link>
+      <guid>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/workload-network.html</guid>
+      <description>Data movement between computation steps is part of understanding AI workload performance.</description>
+      <category>Accelerate AI</category>
+      <content:encoded>&lt;section id="section-1"&gt;&lt;h2&gt;The time between computation&lt;/h2&gt;&lt;p&gt;AI workloads include data movement and communication as well as computation. Congestion and queues in shared networks can affect performance, but networking is not the cause of every delay.&lt;/p&gt;&lt;/section&gt;&lt;section id="section-2"&gt;&lt;h2&gt;Logical paths and transmission queues&lt;/h2&gt;&lt;p&gt;Separating routing domains and managing hardware transmission queues are related challenges. ARAD is evaluating how AMLI links logical workload paths to hardware queues.&lt;/p&gt;&lt;/section&gt;&lt;section id="section-3"&gt;&lt;h2&gt;Compare under controlled conditions&lt;/h2&gt;&lt;p&gt;Throughput and latency comparisons require controlled workloads, data sizes, concurrency, switch configurations and measurement intervals. Conditions matter as much as the resulting numbers.&lt;/p&gt;&lt;/section&gt;&lt;section id="section-4"&gt;&lt;h2&gt;Current evaluation status&lt;/h2&gt;&lt;p&gt;AMLI performance effects are under validation. GPU utilisation gains and throughput improvements are not claimed at this stage. Evaluation begins by defining the operating environment and measurement criteria.&lt;/p&gt;&lt;/section&gt;</content:encoded>
+    </item>
+    <item>
+      <title>Three things to assess before choosing site connectivity</title>
+      <link>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/site-connectivity.html</link>
+      <guid>https://kimrlatkd-jpg.github.io/arad-networks-preview/en/site-connectivity.html</guid>
+      <description>Space, existing infrastructure and operating needs guide the choice of connectivity.</description>
+      <category>Connect AI</category>
+      <content:encoded>&lt;section id="section-1"&gt;&lt;h2&gt;Space and movement&lt;/h2&gt;&lt;p&gt;Above-ground areas, underground spaces, open rooms and winding corridors have different connectivity conditions. Begin with device mobility and where data is generated.&lt;/p&gt;&lt;/section&gt;&lt;section id="section-2"&gt;&lt;h2&gt;Existing infrastructure&lt;/h2&gt;&lt;p&gt;Power lines, network cabling and wireless equipment form the starting point. PLC uses power lines for data communication, but wiring and electrical conditions must be evaluated.&lt;/p&gt;&lt;/section&gt;&lt;section id="section-3"&gt;&lt;h2&gt;Operations and maintenance&lt;/h2&gt;&lt;p&gt;Device count, data requirements and maintenance procedures also matter. Wi-Fi mesh placement and private 5G design should follow these operating needs.&lt;/p&gt;&lt;/section&gt;&lt;section id="section-4"&gt;&lt;h2&gt;Combine technologies around conditions&lt;/h2&gt;&lt;p&gt;ARAD evaluates private 5G, Wi-Fi mesh and PLC around site conditions. Deployment requirements come before treating a technology’s maximum specification as on-site performance.&lt;/p&gt;&lt;/section&gt;</content:encoded>
+    </item>
+  </channel>
+</rss>
