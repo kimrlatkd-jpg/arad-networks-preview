@@ -55,3 +55,7 @@
  .v26-site .rv40-business-links .rv40-link-copy>b{font-size:29px}
 }
 @media(prefers-reduced-motion:reduce){.v26-site .rv40-business-links .rv40-business-link>img{transition:none;transform:none!important}}
+
+/* V41: ARAD signature within the smart-home application photograph. */
+.rv41-case-brand{position:absolute;top:clamp(20px,2.2vw,32px);left:clamp(20px,2.2vw,32px);z-index:2;width:clamp(84px,8vw,112px);pointer-events:none}
+.rv40-case-image .rv41-case-brand>img{display:block;width:100%;height:auto;object-fit:contain;object-position:center}
