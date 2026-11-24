@@ -1,4 +1,4 @@
-/* V38: English type is attached to, and contained by, each holographic surface. */
+/* V39: English type is attached to, and contained by, each holographic surface. */
 .selector-object-fallback{object-fit:contain}
 .selector-object canvas{image-rendering:auto}
 .arad-hologram-labels{opacity:0;transition:opacity 180ms ease}
