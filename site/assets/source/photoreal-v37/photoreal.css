@@ -1,0 +1,9 @@
+/* V37: English screen-space labels stay readable while the luminous scene moves. */
+.selector-object-fallback{object-fit:contain}
+.selector-object canvas{image-rendering:auto}
+.arad-hologram-labels{opacity:0;transition:opacity 180ms ease}
+[data-object-ready=true]>.arad-hologram-labels{opacity:1}
+[data-object-error]>.arad-hologram-labels{display:none}
+.arad-hologram-label{font-kerning:normal;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+@media(min-width:761px){.region-accelerate .selector-object{left:15%;right:9%;top:13.5%;height:44.5%}}
+@media(prefers-reduced-motion:reduce){.selector-object canvas,.selector-object-fallback,.arad-hologram-labels{transition:none!important}}

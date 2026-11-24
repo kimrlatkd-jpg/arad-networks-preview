@@ -1,6 +1,6 @@
 {
-  "name": "arad-photoreal-runtime",
-  "version": "36.0.0",
+  "name": "arad-quality-runtime",
+  "version": "37.0.0",
   "private": true,
   "type": "module",
   "scripts": {

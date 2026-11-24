@@ -104,9 +104,9 @@
     if (!panel || navigator.connection?.saveData) return;
     const base = new URL('.', location.href);
     const business = panel.querySelector('[data-selector-object]')?.dataset.selectorObject;
-    for (const href of [panel.href, new URL('scenes.js?v=36', base).href,
-      new URL(`assets/editorial/object-${business}.jpg?v=36`, base).href,
-      new URL(`assets/photoreal/${business}.png?v=36`, base).href]) {
+    for (const href of [panel.href, new URL('scenes.js?v=37', base).href,
+      new URL(`assets/editorial/object-${business}.jpg?v=37`, base).href,
+      new URL(`assets/photoreal/${business}.png?v=37`, base).href]) {
       if (warmed.has(href)) continue;
       warmed.add(href);
       const link = document.createElement('link');link.rel = 'prefetch';link.href = href;document.head.append(link);
