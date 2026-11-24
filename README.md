@@ -1,9 +1,12 @@
-# ARAD Networks · 홈페이지 미리보기 V36
+# ARAD Networks · 홈페이지 미리보기 V37
 
-[인트로부터 보기](https://kimrlatkd-jpg.github.io/arad-networks-preview/?v=36#home)
+[인트로부터 보기](https://kimrlatkd-jpg.github.io/arad-networks-preview/?v=37#home)
 
-사업 선택 화면과 내부 페이지의 장비를 실사 느낌의 제품 컷아웃으로 다듬은 검토용 홈페이지입니다.
+Accelerate 개념도의 영어 글자와 홀로그램 표현, 세 사업 장비의 화면 선명도를 개선한 검토용 홈페이지입니다.
 
+- 개념도 문구를 영어로 통일하고 화면 위에 선명하게 표시
+- 청색 발광·투명한 층·빛의 흐름으로 홀로그램 표현 개선
+- 고밀도 화면 렌더링과 2배 해상도 대체 이미지 적용
 - 기존 블랙 오프닝, 16:9·21:9 인트로 영상과 카메라·빛 모션 유지
 - Isolate: Service Gateway와 Controller가 들어간 세로 랙
 - Accelerate: 독립형 서버 앞쪽, 청색 홀로그램 기술 개념도 뒤쪽
@@ -17,6 +20,6 @@
 정적 HTTP 서버로 `site/`를 실행할 수 있습니다. 편집 소스와 빌드 안내는 `site/assets/source/`에 있습니다. API 키나 별도 백엔드는 필요하지 않습니다.
 
 ## 배포
-`site/**` 변경은 Pages 워크플로로 배포됩니다. V36에서는 source.zip만 갱신하고 승인된 영상 4개가 든 V34 media.zip을 그대로 사용합니다. ZIP 업데이트 시 수동 워크플로의 `import_archives`를 선택합니다.
+`site/**` 변경은 Pages 워크플로로 배포됩니다. V37에서는 source.zip만 갱신하고 승인된 영상 4개가 든 V34 media.zip을 그대로 사용합니다. ZIP 업데이트 시 수동 워크플로의 `import_archives`를 선택합니다.
 
 외부 라이브러리와 글꼴 고지는 `site/licenses/`와 `site/assets/fonts/OFL.txt`에 있습니다. 브랜드 자산의 권리는 각 권리자에게 있습니다.
