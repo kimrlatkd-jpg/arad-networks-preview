@@ -1,4 +1,4 @@
-/* ARAD v42: approved photographic equipment with live, legible concept layers. */
+/* ARAD v43: approved photographic equipment, without rear screen overlays. */
 (() => {
   'use strict';
   const base = new URL('assets/devices-v42/', document.currentScript.src);
@@ -8,16 +8,11 @@
   let selectorVisible = document.body.dataset.route === 'business';
   let mainScene = null;
   const clamp = value => Math.max(0, Math.min(1, Number(value) || 0));
-  const signal = '<span class="dv-signal"><i></i><i></i><i></i></span>';
   const image = (name, klass, width, height) => `<img class="dv-hardware ${klass}" src="${new URL(name + '.webp?v=42', base).href}" width="${width}" height="${height}" alt="" decoding="async" draggable="false">`;
-  const plateHeader = title => `<div class="dv-ui-top"><span>${title}</span>${signal}</div>`;
-  const plateFooter = title => `<div class="dv-ui-bottom"><span>${title}</span><span>ARAD</span></div>`;
   const templates = {
-    isolate: () => `<div class="dv-hologram dv-paths-ui">${plateHeader('DEVICE PATHS')}<div class="dv-path-rows">${[
-      ['Camera', 'Video service', 'camera'], ['Sensor', 'Data service', 'sensor'], ['Controller', 'Operations', 'controller']
-    ].map(([name, destination, icon], index) => `<div class="dv-path-row" data-dv-mode="${index}"><span class="dv-node-icon dv-icon-${icon}"></span><span>${name}</span><span class="dv-route-line"></span><span class="dv-target">${destination}</span></div>`).join('')}</div>${plateFooter('Individual connections')}</div>${image('isolate-hardware', 'dv-isolate-hardware', 1536, 1024)}`,
-    accelerate: () => `<div class="dv-compute-ui"><div class="dv-workloads">${['TRAINING', 'INFERENCE', 'DATA'].map((name, index) => `<span data-dv-mode="${index}">${name}</span>`).join('')}</div><div class="dv-compute-links">${[0, 1, 2].map(i => `<i data-dv-mode="${i}"></i>`).join('')}</div><div class="dv-logical-plane"><span>LOGICAL PATHS</span><div class="dv-logical-traces"><i></i><i></i><i></i><i></i></div></div><div class="dv-compute-links dv-lower-links">${[0, 1, 2].map(i => `<i data-dv-mode="${i}"></i>`).join('')}</div><div class="dv-compute-plane"><span>COMPUTE</span><div class="dv-compute-slots">${Array.from({length:12}, (_, i) => `<i data-dv-mode="${Math.floor(i / 4)}"></i>`).join('')}</div></div></div>${image('accelerate-hardware', 'dv-accelerate-hardware', 2048, 1360)}`,
-    connect: () => `<div class="dv-hologram dv-connect-ui">${plateHeader('SITE CONNECTIVITY')}<div class="dv-topology"><svg class="dv-topology-lines" viewBox="0 0 420 155" preserveAspectRatio="none" aria-hidden="true"><path class="dv-topology-base" d="M210 23V56M210 56H66V99M210 56H354V99M210 56V111"/><path data-dv-mode="2" d="M210 23V56H66V99"/><path data-dv-mode="1" d="M210 23V111"/><path data-dv-mode="0" d="M210 23V56H354V99"/></svg><span class="dv-topo-node dv-core">Site network</span><span class="dv-topo-node dv-plc" data-dv-mode="2">PLC</span><span class="dv-topo-node dv-mesh" data-dv-mode="1">Wi-Fi Mesh</span><span class="dv-topo-node dv-edge" data-dv-mode="0">5G Edge</span></div>${plateFooter('Connected at the edge')}</div><div class="dv-device-group"><div class="dv-device dv-device-plc" data-dv-mode="2">${image('plc', 'dv-plc-hardware', 1448, 1086)}</div><div class="dv-device dv-device-edge" data-dv-mode="0">${image('5g-edge', 'dv-edge-hardware', 1536, 1024)}</div><div class="dv-device dv-device-mesh" data-dv-mode="1">${image('wifi-mesh', 'dv-mesh-hardware', 1536, 1024)}</div></div>`
+    isolate: () => image('isolate-hardware', 'dv-isolate-hardware', 1536, 1024),
+    accelerate: () => image('accelerate-hardware', 'dv-accelerate-hardware', 2048, 1360),
+    connect: () => `<div class="dv-device-group"><div class="dv-device dv-device-plc" data-dv-mode="2">${image('plc', 'dv-plc-hardware', 1448, 1086)}</div><div class="dv-device dv-device-edge" data-dv-mode="0">${image('5g-edge', 'dv-edge-hardware', 1536, 1024)}</div><div class="dv-device dv-device-mesh" data-dv-mode="1">${image('wifi-mesh', 'dv-mesh-hardware', 1536, 1024)}</div></div>`
   };
 
   function mount(host, options = {}) {
@@ -73,9 +68,8 @@
       const chapter = active ? Math.max(0, Math.min(2, Math.floor((progress - .14 + .00001) / .30))) : -1;
       root.dataset.storyActive = String(active);
       root.style.setProperty('--dv-progress', progress.toFixed(4));
-      // Readable planes and physical hardware separate slightly as the explanation advances.
+      // Keep subtle equipment movement linked to the existing explanation chapters.
       const travel = motion.matches ? 0 : progress;
-      root.style.setProperty('--dv-ui-shift', `${(-travel * 10).toFixed(2)}px`);
       root.style.setProperty('--dv-hardware-shift', `${(travel * 8).toFixed(2)}px`);
       if (chapter !== storyChapter) {
         storyChapter = chapter;
@@ -85,16 +79,12 @@
     const replay = (delay = 0) => {
       if (disposed || paused || !visible || document.hidden || motion.matches) return;
       cancelAnimations();
-      const plane = root.querySelector('.dv-hologram,.dv-compute-ui');
       const hardware = root.querySelector('.dv-device-group,.dv-root > .dv-hardware');
-      [plane, hardware].forEach((node, index) => {
-        if (!node || !node.animate) return;
-        const animation = node.animate([
-          {opacity:.35, translate:`${index ? 8 : 0}px ${index ? 10 : 5}px`},
-          {opacity:1, translate:'0 0'}
-        ], {duration:850, delay:delay + index * 100, easing:'cubic-bezier(.65,0,.35,1)'});
-        animations.push(animation);
-      });
+      if (!hardware?.animate) return;
+      animations.push(hardware.animate([
+        {opacity:.35, translate:'8px 10px'},
+        {opacity:1, translate:'0 0'}
+      ], {duration:850, delay, easing:'cubic-bezier(.65,0,.35,1)'}));
     };
     const scene = {
       setMode,
@@ -111,9 +101,9 @@
       setReducedMotion(value) { root.dataset.reducedMotion = String(!!value); if (value) cancelAnimations(); },
       getState() {
         const rect = host.getBoundingClientRect();
-        return {version:'42.0.0', type, selector, ready:!disposed, paused:paused || document.hidden || !visible,
+        return {version:'43.0.0', type, selector, ready:!disposed, paused:paused || document.hidden || !visible,
           mode, progress, width:rect.width, height:rect.height, hardware:'photographic-cutout',
-          concept:'native-hologram', assetsReady:[...root.querySelectorAll('img')].every(img => img.complete && img.naturalWidth > 0)};
+          concept:'equipment-only', assetsReady:[...root.querySelectorAll('img')].every(img => img.complete && img.naturalWidth > 0)};
       },
       dispose() {
         if (disposed) return;
