@@ -104,9 +104,11 @@
     if (!panel || navigator.connection?.saveData) return;
     const base = new URL('.', location.href);
     const business = panel.querySelector('[data-selector-object]')?.dataset.selectorObject;
-    for (const href of [panel.href, new URL('scenes.js?v=40', base).href,
-      new URL(`assets/editorial/object-${business}.jpg?v=40`, base).href,
-      new URL(`assets/photoreal/${business}.png?v=40`, base).href]) {
+    const assets = business === 'connect' ? ['plc', 'wifi-mesh', '5g-edge'] : [`${business}-hardware`];
+    for (const href of [panel.href,
+      new URL('device-visuals.js?v=42', base).href,
+      new URL('device-visuals.css?v=42', base).href,
+      ...assets.map(asset => new URL(`assets/devices-v42/${asset}.webp?v=42`, base).href)]) {
       if (warmed.has(href)) continue;
       warmed.add(href);
       const link = document.createElement('link');link.rel = 'prefetch';link.href = href;document.head.append(link);
