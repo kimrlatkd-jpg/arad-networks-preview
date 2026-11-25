@@ -1,12 +1,15 @@
-# ARAD Networks · 홈페이지 미리보기 V41
+# ARAD Networks · 홈페이지 미리보기 V42
 
-[인트로부터 보기](https://kimrlatkd-jpg.github.io/arad-networks-preview/?v=41#home)
+[인트로부터 보기](https://kimrlatkd-jpg.github.io/arad-networks-preview/?v=42#home)
 
-V40의 4–12페이지 반영본을 유지하면서 다음 사항을 수정했습니다.
+승인된 장비 비주얼과 프레임 없는 홀로그램 UI를 한·영 사업 선택 화면과 세 내부 페이지에 적용했습니다.
 
-- Isolate 사업 선택 설명: 기기 네트워크의 안전한 연결
-- 영문 라벨·설명도 같은 의미로 정리
-- 스마트홈 적용 환경 이미지에 공식 ARAD 벡터 로고 추가
+- Isolate AI: 컨트롤러·스위치·게이트웨이와 기기별 경로
+- Accelerate AI: 서버와 작업·논리 경로·연산 구조
+- Connect AI: PLC·Wi-Fi Mesh·5G Edge와 현장 연결 UI
+- 선명한 영문 웹 텍스트, 경로 선택 및 스크롤 단계 연동
+- 인트로 영상과 기존 대각선 패널 전환 유지
+- 같은 해상도의 고품질 WebP로 웹 장비 5개 합계 약 1.8 MB
 
 하단 실사 카드와 주소, 블로그 운영 구조는 반영됐습니다. 연구소 신규 원고·실측 그래프·기술 사진, Connect PM 최종안, 대표 회사소개 목차는 아직 미수신이며 현재 자료 기반 초안입니다.
 
@@ -26,8 +29,8 @@ V40의 4–12페이지 반영본을 유지하면서 다음 사항을 수정했�
 연구소·영업 담당자는 저장소 쓰기 권한을 가진 GitHub 계정으로 `content/insights/*.json` 원고를 추가·수정합니다. `scripts/build_insights.py`가 한·영 목록, 본문, RSS를 생성하고 Pages 워크플로가 검증 후 발행합니다. 별도 CMS 계정이나 공개 작성 권한은 만들지 않았습니다. 검토 사이트의 noindex 설정은 유지했으며, 검색/AI 수집 여부를 보장하지 않습니다.
 
 ## 실행과 배포
-정적 HTTP 서버로 `site/`를 실행할 수 있습니다. 편집 가능한 장비 소스는 `site/assets/source/`에 있습니다.
+정적 HTTP 서버로 `site/`를 실행할 수 있습니다. 현재 장비 UI·모션 소스는 `site/device-visuals.js`와 `site/device-visuals.css`입니다. 이전 모델 소스는 `site/assets/source/`에 보관돼 있습니다.
 
-`site/**`, 원고, 생성기 변경은 Pages 워크플로로 반영됩니다. source.zip 갱신 시 수동 워크플로의 `import_archives`를 선택합니다. V40에서도 승인된 영상 4개가 담긴 V34 media.zip을 유지합니다.
+`site/**`, 원고, 생성기 변경은 Pages 워크플로로 반영됩니다. source.zip 갱신 시 수동 워크플로의 `import_archives`를 선택합니다. V42에서도 승인된 영상 4개가 담긴 V34 media.zip을 유지합니다.
 
 사진·라이브러리·글꼴 출처는 `site/licenses/`와 `site/assets/fonts/OFL.txt`에 기록돼 있습니다.
